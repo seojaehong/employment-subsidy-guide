@@ -5,9 +5,11 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-import SubsidyDetail from "./pages/SubsidyDetail";
-import EligibilityCheck from "./pages/EligibilityCheck";
 import SubsidyList from "./pages/SubsidyList";
+import SubsidyDetail from "./pages/SubsidyDetail";
+import SubsidyCompare from "./pages/SubsidyCompare";
+import EligibilityCheck from "./pages/EligibilityCheck";
+import ApplicationDraft from "./pages/ApplicationDraft";
 
 function Router() {
   return (
@@ -15,7 +17,9 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/subsidies" component={SubsidyList} />
       <Route path="/subsidies/:id" component={SubsidyDetail} />
+      <Route path="/compare" component={SubsidyCompare} />
       <Route path="/check" component={EligibilityCheck} />
+      <Route path="/apply" component={ApplicationDraft} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

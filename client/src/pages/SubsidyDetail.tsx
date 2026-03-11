@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import ConsultationForm from "@/components/ConsultationForm";
 import { subsidyData, categoryColors } from "@/lib/subsidyData";
 
 export default function SubsidyDetail() {
@@ -497,6 +498,11 @@ export default function SubsidyDetail() {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        {/* Consultation Form */}
+        <div className="mt-12">
+          <ConsultationForm subsidyName={subsidy.name} />
         </div>
 
         {/* Related Subsidies */}

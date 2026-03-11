@@ -1,0 +1,322 @@
+// Design: Dark Fintech Minimal — Consultation request form for labor attorney
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MessageSquare,
+  User,
+  Phone,
+  Building2,
+  Send,
+  CheckCircle2,
+  ChevronDown,
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface ConsultationFormProps {
+  subsidyName?: string;
+}
+
+const consultTypes = [
+  "지원금 신청 자격 검토",
+  "신청 서류 준비 안내",
+  "신청 절차 대행",
+  "지원금 수령 후 관리",
+  "기타 노무 상담",
+];
+
+export default function ConsultationForm({ subsidyName }: ConsultationFormProps) {
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    company: "",
+    consultType: consultTypes[0],
+    message: "",
+    agreePrivacy: false,
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (field: string, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const formatPhone = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  };
+
+  const isValid = form.name.trim() && form.phone.replace(/\D/g, "").length >= 10 && form.agreePrivacy;
+
+  const handleSubmit = () => {
+    if (!isValid) return;
+    setLoading(true);
+    // Simulate submission
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+      toast.success("상담 신청이 완료되었습니다. 빠른 시일 내에 연락드리겠습니다.");
+    }, 1200);
+  };
+
+  const inputStyle = {
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    color: "#F8FAFC",
+    borderRadius: "12px",
+    padding: "11px 14px",
+    fontSize: "14px",
+    width: "100%",
+    outline: "none",
+    transition: "border-color 0.2s",
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "12px",
+    fontWeight: "600" as const,
+    marginBottom: "6px",
+    color: "rgba(248,250,252,0.45)",
+  };
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.07)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="px-6 py-5 flex items-center gap-3"
+        style={{
+          background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(16,185,129,0.08))",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "rgba(59,130,246,0.2)", color: "#60A5FA" }}
+        >
+          <MessageSquare size={18} />
+        </div>
+        <div>
+          <h3 className="text-base font-bold" style={{ color: "#F8FAFC" }}>
+            노무법인 위너스 전문가 상담
+          </h3>
+          <p className="text-xs mt-0.5" style={{ color: "rgba(248,250,252,0.45)" }}>
+            {subsidyName
+              ? `${subsidyName} 관련 전문 노무사와 1:1 상담`
+              : "고용장려금 신청 전 전문 노무사와 1:1 상담"}
+          </p>
+        </div>
+        <div
+          className="ml-auto px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0"
+          style={{
+            background: "rgba(16,185,129,0.12)",
+            border: "1px solid rgba(16,185,129,0.25)",
+            color: "#6EE7B7",
+          }}
+        >
+          무료 상담
+        </div>
+      </div>
+
+      <div className="p-6">
+        <AnimatePresence mode="wait">
+          {!submitted ? (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label style={labelStyle}>
+                    <span className="flex items-center gap-1.5">
+                      <User size={11} />
+                      담당자명 *
+                    </span>
+                  </label>
+                  <input
+                    style={inputStyle}
+                    placeholder="홍길동"
+                    value={form.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    onFocus={(e) => (e.target.style.borderColor = "rgba(59,130,246,0.5)")}
+                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>
+                    <span className="flex items-center gap-1.5">
+                      <Phone size={11} />
+                      연락처 *
+                    </span>
+                  </label>
+                  <input
+                    style={inputStyle}
+                    placeholder="010-0000-0000"
+                    value={form.phone}
+                    onChange={(e) => handleChange("phone", formatPhone(e.target.value))}
+                    onFocus={(e) => (e.target.style.borderColor = "rgba(59,130,246,0.5)")}
+                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>
+                    <span className="flex items-center gap-1.5">
+                      <Building2 size={11} />
+                      회사명
+                    </span>
+                  </label>
+                  <input
+                    style={inputStyle}
+                    placeholder="(주)회사명"
+                    value={form.company}
+                    onChange={(e) => handleChange("company", e.target.value)}
+                    onFocus={(e) => (e.target.style.borderColor = "rgba(59,130,246,0.5)")}
+                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>상담 유형</label>
+                  <div className="relative">
+                    <select
+                      style={{ ...inputStyle, paddingRight: "36px", cursor: "pointer", appearance: "none" }}
+                      value={form.consultType}
+                      onChange={(e) => handleChange("consultType", e.target.value)}
+                      onFocus={(e) => (e.target.style.borderColor = "rgba(59,130,246,0.5)")}
+                      onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                    >
+                      {consultTypes.map((t) => (
+                        <option key={t} value={t} style={{ background: "#0A0E1A" }}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: "rgba(248,250,252,0.4)" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label style={labelStyle}>문의 내용</label>
+                <textarea
+                  style={{
+                    ...inputStyle,
+                    resize: "vertical",
+                    minHeight: "80px",
+                  }}
+                  placeholder={
+                    subsidyName
+                      ? `${subsidyName} 관련 문의 내용을 입력해주세요.`
+                      : "문의하실 내용을 간략히 입력해주세요."
+                  }
+                  value={form.message}
+                  onChange={(e) => handleChange("message", e.target.value)}
+                  onFocus={(e) => (e.target.style.borderColor = "rgba(59,130,246,0.5)")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                />
+              </div>
+
+              {/* Privacy consent */}
+              <label className="flex items-start gap-3 mb-5 cursor-pointer">
+                <div
+                  className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
+                  style={{
+                    background: form.agreePrivacy ? "rgba(59,130,246,0.8)" : "rgba(255,255,255,0.06)",
+                    border: form.agreePrivacy ? "none" : "1px solid rgba(255,255,255,0.15)",
+                  }}
+                  onClick={() => handleChange("agreePrivacy", !form.agreePrivacy)}
+                >
+                  {form.agreePrivacy && <CheckCircle2 size={13} style={{ color: "#fff" }} />}
+                </div>
+                <span className="text-xs leading-relaxed" style={{ color: "rgba(248,250,252,0.5)" }}>
+                  개인정보 수집 및 이용에 동의합니다. 수집된 정보는 상담 목적으로만 사용되며,
+                  상담 완료 후 즉시 파기됩니다. <span style={{ color: "#60A5FA" }}>(필수)</span>
+                </span>
+              </label>
+
+              <button
+                className="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
+                style={{
+                  background: isValid
+                    ? "linear-gradient(135deg, #3B82F6, #2563EB)"
+                    : "rgba(255,255,255,0.06)",
+                  color: isValid ? "#fff" : "rgba(248,250,252,0.3)",
+                  boxShadow: isValid ? "0 0 25px rgba(59,130,246,0.3)" : "none",
+                  cursor: isValid ? "pointer" : "not-allowed",
+                }}
+                onClick={handleSubmit}
+                disabled={!isValid || loading}
+              >
+                {loading ? (
+                  <>
+                    <div
+                      className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
+                      style={{ borderColor: "rgba(255,255,255,0.5)", borderTopColor: "transparent" }}
+                    />
+                    전송 중...
+                  </>
+                ) : (
+                  <>
+                    <Send size={15} />
+                    상담 신청하기
+                  </>
+                )}
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="text-center py-8"
+            >
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
+              >
+                <CheckCircle2 size={32} style={{ color: "#34D399" }} />
+              </div>
+              <h4 className="text-lg font-bold mb-2" style={{ color: "#F8FAFC" }}>
+                상담 신청 완료
+              </h4>
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.5)" }}>
+                <strong style={{ color: "#F8FAFC" }}>{form.name}</strong>님, 신청해주셔서 감사합니다.
+                <br />
+                영업일 기준 1~2일 내에 <strong style={{ color: "#F8FAFC" }}>{form.phone}</strong>으로
+                <br />
+                전문 노무사가 연락드리겠습니다.
+              </p>
+              <button
+                className="mt-5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(248,250,252,0.6)",
+                }}
+                onClick={() => {
+                  setSubmitted(false);
+                  setForm({ ...form, name: "", phone: "", company: "", message: "", agreePrivacy: false });
+                }}
+              >
+                다시 신청하기
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}

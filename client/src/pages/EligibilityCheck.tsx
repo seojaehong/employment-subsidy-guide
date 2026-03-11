@@ -428,7 +428,7 @@ export default function EligibilityCheck() {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all"
+                  className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-semibold transition-all"
                   style={{
                     background: "rgba(255,255,255,0.05)",
                     border: "1px solid rgba(255,255,255,0.08)",
@@ -441,11 +441,26 @@ export default function EligibilityCheck() {
                   }}
                 >
                   <RefreshCw size={16} />
-                  다시 검토하기
+                  다시 검토
                 </button>
+                {eligible.length > 0 && (
+                  <Link href={`/apply?subsidies=${eligible.map((s) => s.id).join(",")}`}>
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
+                      style={{
+                        background: "linear-gradient(135deg, #10B981, #059669)",
+                        color: "#fff",
+                        boxShadow: "0 0 20px rgba(16,185,129,0.3)",
+                      }}
+                    >
+                      <ArrowRight size={16} />
+                      신청서 초안 생성
+                    </button>
+                  </Link>
+                )}
                 <Link href="/subsidies">
                   <button
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
                     style={{
                       background: "linear-gradient(135deg, #3B82F6, #2563EB)",
                       color: "#fff",

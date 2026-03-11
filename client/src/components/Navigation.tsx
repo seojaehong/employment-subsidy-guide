@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
   { label: "지원금 안내", href: "/subsidies" },
+  { label: "지원금 비교", href: "/compare" },
   { label: "자격 검토", href: "/check" },
 ];
 
