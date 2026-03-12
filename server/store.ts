@@ -32,6 +32,15 @@ interface RuntimeDb {
 }
 
 const DB_PATH = path.resolve(process.cwd(), "server", "data", "runtime-db.json");
+const IS_SERVERLESS_RUNTIME =
+  process.env.VERCEL === "1" ||
+  process.env.VERCEL === "true" ||
+  Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+
+declare global {
+  // Reuse a single in-memory store inside a warm serverless instance.
+  var __employmentSubsidyRuntimeDb: RuntimeDb | undefined;
+}
 
 function ensureDir() {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -50,6 +59,13 @@ function buildSeedDb(): RuntimeDb {
 }
 
 function readDb(): RuntimeDb {
+  if (IS_SERVERLESS_RUNTIME) {
+    if (!globalThis.__employmentSubsidyRuntimeDb) {
+      globalThis.__employmentSubsidyRuntimeDb = buildSeedDb();
+    }
+    return globalThis.__employmentSubsidyRuntimeDb;
+  }
+
   ensureDir();
   if (!fs.existsSync(DB_PATH)) {
     const seed = buildSeedDb();
@@ -62,6 +78,11 @@ function readDb(): RuntimeDb {
 }
 
 function writeDb(db: RuntimeDb) {
+  if (IS_SERVERLESS_RUNTIME) {
+    globalThis.__employmentSubsidyRuntimeDb = db;
+    return;
+  }
+
   ensureDir();
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf8");
 }

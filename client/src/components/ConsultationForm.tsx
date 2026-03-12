@@ -250,7 +250,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
               >
                 <Database size={14} className="flex-shrink-0 mt-0.5" />
                 <span>
-                  상담 요청은 운영 DB에도 저장되어 후속 검토와 문서 준비에 활용됩니다.
+                  상담 요청은 이메일로 접수되며, 연결된 운영 기록에 함께 반영됩니다.
                   {statusSummary.length > 0 && ` 현재 판정 요약: ${statusSummary.join(", ")}`}
                 </span>
               </div>
@@ -266,7 +266,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                 >
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>
-                    EmailJS 설정이 없어 이메일은 전송되지 않지만, 상담 DB에는 정상 저장됩니다.
+                    EmailJS 설정이 없어 이메일 전송은 생략되고, 연결된 운영 기록 저장만 시도합니다.
                   </span>
                 </div>
               )}
