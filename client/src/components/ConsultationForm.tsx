@@ -89,19 +89,6 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
     setError(null);
 
     try {
-      await createConsultationLead({
-        name: form.name,
-        phone: form.phone,
-        company: form.company,
-        consultType: form.consultType,
-        message: form.message,
-        subsidyName,
-        sessionId: context?.sessionId,
-        interestedProgramIds,
-        determinationStatuses,
-        missingItems,
-      });
-
       if (IS_CONFIGURED) {
         const now = new Date();
         const dateStr = now.toLocaleString("ko-KR", {
@@ -132,6 +119,23 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
           templateParams,
           EMAILJS_PUBLIC_KEY,
         );
+      }
+
+      try {
+        await createConsultationLead({
+          name: form.name,
+          phone: form.phone,
+          company: form.company,
+          consultType: form.consultType,
+          message: form.message,
+          subsidyName,
+          sessionId: context?.sessionId,
+          interestedProgramIds,
+          determinationStatuses,
+          missingItems,
+        });
+      } catch (storeError) {
+        console.warn("Lead store fallback failed:", storeError);
       }
 
       setSubmitted(true);

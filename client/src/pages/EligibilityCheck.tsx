@@ -20,13 +20,14 @@ import type {
   OperationalProgram,
   RecommendationRecord,
 } from "@shared/subsidy";
+import {
+  determinePrograms,
+  getEligibilityConfig,
+  getProgramFollowUpQuestions,
+  recommendProgramIds,
+} from "@shared/subsidy";
 import Navigation from "@/components/Navigation";
 import ConsultationForm from "@/components/ConsultationForm";
-import {
-  createEligibilitySession,
-  determineEligibilitySession,
-  fetchEligibilityConfig,
-} from "@/lib/api";
 import { usePrograms } from "@/hooks/usePrograms";
 import { categoryColors } from "@/lib/subsidyData";
 
@@ -40,14 +41,6 @@ interface SessionCreateResponse {
   };
   recommendedPrograms: { program: OperationalProgram | null }[];
   followUpQuestions: EligibilityQuestionRecord[];
-}
-
-interface DetermineResponse {
-  session: {
-    id: string;
-    baseAnswers: BaseEligibilityAnswers;
-  };
-  reports: Array<DeterminationResult & { program: OperationalProgram | null }>;
 }
 
 const resultLabels = {
@@ -95,14 +88,8 @@ export default function EligibilityCheck() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchEligibilityConfig()
-      .then((payload) => {
-        const typedPayload = payload as { config: { commonQuestions: EligibilityQuestionRecord[] } };
-        setCommonQuestions(typedPayload.config.commonQuestions);
-      })
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "검토 질문을 불러오지 못했습니다.");
-      });
+    const config = getEligibilityConfig();
+    setCommonQuestions(config.commonQuestions);
   }, []);
 
   const currentQuestion = commonQuestions[commonStepIndex];
@@ -175,14 +162,23 @@ export default function EligibilityCheck() {
     setError(null);
 
     try {
-      const payload = (await createEligibilitySession(normalisedBaseAnswers)) as SessionCreateResponse;
+      const recommendations = recommendProgramIds(normalisedBaseAnswers);
+      const payload: SessionCreateResponse = {
+        session: {
+          id: `local-session-${Date.now()}`,
+          baseAnswers: normalisedBaseAnswers,
+          recommendations,
+        },
+        recommendedPrograms: recommendations.map((recommendation) => ({
+          program: programLookup.get(recommendation.programId) ?? null,
+        })),
+        followUpQuestions: getProgramFollowUpQuestions().filter((question) =>
+          recommendations.some((recommendation) => recommendation.programId === question.programId),
+        ),
+      };
       setSessionId(payload.session.id);
       const resolvedPrograms = payload.recommendedPrograms
-        .map((entry, index) => {
-          if (entry.program) return entry.program;
-          const recommendation = payload.session.recommendations[index];
-          return recommendation ? programLookup.get(recommendation.programId) ?? null : null;
-        })
+        .map((entry) => entry.program)
         .filter(Boolean) as OperationalProgram[];
       setRecommendedPrograms(resolvedPrograms);
       setFollowUpQuestions(payload.followUpQuestions);
@@ -195,13 +191,27 @@ export default function EligibilityCheck() {
   };
 
   const submitDetermination = async () => {
-    if (!sessionId) return;
+    if (!sessionId || !normalisedBaseAnswers) return;
     setLoading(true);
     setError(null);
 
     try {
-      const payload = (await determineEligibilitySession(sessionId, followUpAnswers)) as DetermineResponse;
-      setReports(payload.reports);
+      const nextReports = determinePrograms(
+        recommendedPrograms.map((program) => program.program.legacyId),
+        normalisedBaseAnswers,
+        followUpAnswers,
+      ).map((determination) => ({
+        ...determination,
+        program: programLookup.get(determination.programId) ?? null,
+      }));
+      setReports(nextReports);
+      const payload = {
+        session: {
+          id: sessionId,
+          baseAnswers: normalisedBaseAnswers,
+        },
+        reports: nextReports,
+      };
       sessionStorage.setItem("eligibility-session", JSON.stringify(payload));
       setFlowStep("result");
     } catch (err) {
