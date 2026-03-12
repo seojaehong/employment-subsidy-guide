@@ -640,8 +640,8 @@ export default function Home() {
               },
               {
                 step: "03",
-                title: "신청 자동화 (준비 중)",
-                desc: "검토 결과를 바탕으로 신청 서류를 자동 생성하고 제출까지 도와드립니다.",
+                title: "전문가 상담 연결",
+                desc: "검토 결과와 보완 항목을 바탕으로 노무법인 위너스와 상담을 진행합니다.",
                 color: "#FCD34D",
                 icon: <Zap size={24} />,
               },

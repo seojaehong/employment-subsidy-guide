@@ -726,21 +726,6 @@ export default function EligibilityCheck() {
                     <RefreshCw size={16} />
                     다시 검토
                   </button>
-                  {selectedProgramIds.length > 0 && (
-                    <Link href={`/apply?session=${sessionId}&subsidies=${selectedProgramIds.join(",")}`}>
-                      <button
-                        className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
-                        style={{
-                          background: "linear-gradient(135deg, #10B981, #059669)",
-                          color: "#fff",
-                          boxShadow: "0 0 20px rgba(16,185,129,0.3)",
-                        }}
-                      >
-                        신청서 초안 생성
-                        <ArrowRight size={16} />
-                      </button>
-                    </Link>
-                  )}
                   <Link href="/subsidies">
                     <button
                       className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"

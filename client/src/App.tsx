@@ -9,7 +9,6 @@ import SubsidyList from "./pages/SubsidyList";
 import SubsidyDetail from "./pages/SubsidyDetail";
 import SubsidyCompare from "./pages/SubsidyCompare";
 import EligibilityCheck from "./pages/EligibilityCheck";
-import ApplicationDraft from "./pages/ApplicationDraft";
 
 function Router() {
   return (
@@ -19,7 +18,6 @@ function Router() {
       <Route path="/subsidies/:id" component={SubsidyDetail} />
       <Route path="/compare" component={SubsidyCompare} />
       <Route path="/check" component={EligibilityCheck} />
-      <Route path="/apply" component={ApplicationDraft} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

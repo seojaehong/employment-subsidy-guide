@@ -7,7 +7,6 @@ import {
   XCircle,
   Plus,
   X,
-  ArrowRight,
   BarChart3,
   ChevronRight,
 } from "lucide-react";
@@ -481,23 +480,6 @@ export default function SubsidyCompare() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Apply to draft */}
-            <div className="mt-8 flex justify-center">
-              <Link href={`/apply?subsidies=${selected.join(",")}`}>
-                <button
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
-                  style={{
-                    background: "linear-gradient(135deg, #3B82F6, #2563EB)",
-                    color: "#fff",
-                    boxShadow: "0 0 25px rgba(59,130,246,0.35)",
-                  }}
-                >
-                  선택한 지원금으로 신청서 초안 생성
-                  <ArrowRight size={16} />
-                </button>
-              </Link>
             </div>
           </motion.div>
         ) : (
