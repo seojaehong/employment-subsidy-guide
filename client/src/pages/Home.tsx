@@ -625,7 +625,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
             {/* Connector line */}
             <div
-              className="hidden md:block absolute top-12 left-1/3 right-1/3 h-px"
+              className="hidden md:block absolute top-12 left-1/3 right-1/3 h-px z-0"
               style={{ background: "linear-gradient(90deg, rgba(59,130,246,0.3), rgba(16,185,129,0.3))" }}
             />
 
@@ -659,7 +659,7 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 custom={i * 0.15}
-                className="relative p-6 rounded-2xl"
+                className="relative z-10 p-6 rounded-2xl"
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.07)",
