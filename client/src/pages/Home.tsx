@@ -623,12 +623,6 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            {/* Connector line */}
-            <div
-              className="hidden md:block absolute top-12 left-1/3 right-1/3 h-px z-0"
-              style={{ background: "linear-gradient(90deg, rgba(59,130,246,0.3), rgba(16,185,129,0.3))" }}
-            />
-
             {[
               {
                 step: "01",
