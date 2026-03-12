@@ -567,7 +567,7 @@ export default function SubsidyDetail() {
         }}
       >
         <div className="container text-center text-xs" style={{ color: "rgba(248,250,252,0.25)" }}>
-          본 사이트의 정보는 참고용이며, 실제 지원금 신청 시 관할 고용센터 또는 전문 노무사와 상담하시기 바랍니다.
+          본 검토 결과는 참고용이며, 실제지원금 신청시 노무법인 위너스에 연락주시면 친절하게 상담드리겠습니다.
         </div>
       </footer>
     </div>
