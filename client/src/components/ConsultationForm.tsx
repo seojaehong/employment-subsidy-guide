@@ -105,6 +105,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
           from_name: form.name,
           from_phone: form.phone,
           from_company: form.company || "(미입력)",
+          reply_to: form.company ? `${form.name} / ${form.company}` : form.name,
           consult_type: form.consultType,
           subsidy_name: subsidyName ?? "일반 상담",
           message: form.message || "(내용 없음)",
@@ -141,7 +142,13 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
       setSubmitted(true);
     } catch (err) {
       console.error("Consultation submit error:", err);
-      setError("상담 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "상담 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+      setError(message);
     } finally {
       setLoading(false);
     }
