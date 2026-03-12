@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { nanoid } from "nanoid";
-import { subsidyData } from "../client/src/lib/subsidyData";
+import seedDb from "./data/seed-db.json";
 import {
   determinePrograms,
   getCommonEligibilityQuestions,
@@ -19,7 +19,7 @@ import {
   type SubsidyExclusionRecord,
   type SubsidyProgramRecord,
   type SubsidyRuleRecord,
-} from "@shared/subsidy";
+} from "../shared/subsidy";
 
 interface RuntimeDb {
   subsidy_program: SubsidyProgramRecord[];
@@ -33,102 +33,17 @@ interface RuntimeDb {
 
 const DB_PATH = path.resolve(process.cwd(), "server", "data", "runtime-db.json");
 
-const sourceDocuments: SourceDocumentRecord[] = [
-  {
-    id: "doc-2026-subsidy-guide",
-    title: "2026 고용장려금 지원제도",
-    issuer: "고용노동부",
-    기준일: "2026-01-01",
-    publishedAt: "2026-01-01",
-    fileName: "2026 고용장려금 지원제도.pdf",
-    priority: 2,
-  },
-  {
-    id: "doc-2026-continued-employment",
-    title: "2026년 고령자 계속고용장려금 가이드북",
-    issuer: "고용노동부",
-    기준일: "2026-01-01",
-    publishedAt: "2026-01-01",
-    fileName: "'26년 고령자 계속고용장려금 가이드북.pdf",
-    priority: 3,
-  },
-  {
-    id: "doc-winners-review",
-    title: "2026년도 고용장려금 적합여부검토",
-    issuer: "노무법인 위너스",
-    기준일: "2026-01-01",
-    publishedAt: "2026-01-01",
-    fileName: "2026년도_고용장려금_적합여부검토_노무법인위너스.pdf",
-    priority: 1,
-  },
-];
-
 function ensureDir() {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 }
 
-function toProgramRecord(item: (typeof subsidyData)[number]): SubsidyProgramRecord {
-  const sourceDocumentIds =
-    item.id === "continued-employment"
-      ? ["doc-2026-subsidy-guide", "doc-2026-continued-employment", "doc-winners-review"]
-      : ["doc-2026-subsidy-guide", "doc-winners-review"];
-
-  return {
-    id: `program-${item.id}`,
-    legacyId: item.id,
-    name: item.name,
-    subName: item.subName,
-    category: item.category,
-    summary: item.description,
-    amountLabel: item.amountLabel,
-    duration: item.duration,
-    applicationCycle: item.applicationCycle,
-    tags: item.tags,
-    highlight: item.highlight,
-    baseAmount: item.amount,
-    sourceDocumentIds,
-    latestSourceDocumentId:
-      item.id === "continued-employment"
-        ? "doc-2026-continued-employment"
-        : "doc-2026-subsidy-guide",
-    published: true,
-  };
-}
-
-function toRuleRecord(item: (typeof subsidyData)[number]): SubsidyRuleRecord {
-  const followUpQuestionIds = getProgramFollowUpQuestions()
-    .filter((question) => question.programId === item.id)
-    .map((question) => question.id);
-
-  return {
-    id: `rule-${item.id}`,
-    programId: item.id,
-    requirements: item.requirements,
-    exclusions: item.exclusions,
-    notes: item.notes,
-    followUpQuestionIds,
-  };
-}
-
-function toExclusionRecords(item: (typeof subsidyData)[number]) {
-  return item.exclusions.map<SubsidyExclusionRecord>((text, index) => ({
-    id: `exclusion-${item.id}-${index + 1}`,
-    programId: item.id,
-    text,
-  }));
-}
-
 function buildSeedDb(): RuntimeDb {
-  const subsidyPrograms = subsidyData.map(toProgramRecord);
-  const subsidyRules = subsidyData.map(toRuleRecord);
-  const subsidyExclusions = subsidyData.flatMap(toExclusionRecords);
-
   return {
-    subsidy_program: subsidyPrograms,
-    subsidy_rule: subsidyRules,
-    subsidy_exclusion: subsidyExclusions,
-    subsidy_source_document: sourceDocuments,
-    eligibility_question: [...getCommonEligibilityQuestions(), ...getProgramFollowUpQuestions()],
+    subsidy_program: seedDb.subsidy_program as SubsidyProgramRecord[],
+    subsidy_rule: seedDb.subsidy_rule as SubsidyRuleRecord[],
+    subsidy_exclusion: seedDb.subsidy_exclusion as SubsidyExclusionRecord[],
+    subsidy_source_document: seedDb.subsidy_source_document as SourceDocumentRecord[],
+    eligibility_question: seedDb.eligibility_question as EligibilityQuestionRecord[],
     eligibility_session: [],
     consultation_lead: [],
   };
