@@ -1,0 +1,78 @@
+import { useEffect, useState } from "react";
+import type { OperationalProgram } from "@shared/subsidy";
+import { fetchPrograms } from "@/lib/api";
+import { subsidyData } from "@/lib/subsidyData";
+
+function buildFallbackPrograms(): OperationalProgram[] {
+  return subsidyData.map((item) => ({
+    program: {
+      id: `fallback-${item.id}`,
+      legacyId: item.id,
+      name: item.name,
+      subName: item.subName,
+      category: item.category,
+      summary: item.description,
+      amountLabel: item.amountLabel,
+      duration: item.duration,
+      applicationCycle: item.applicationCycle,
+      tags: item.tags,
+      highlight: item.highlight,
+      baseAmount: item.amount,
+      sourceDocumentIds: ["fallback-doc"],
+      latestSourceDocumentId: "fallback-doc",
+      published: true,
+    },
+    rule: {
+      id: `fallback-rule-${item.id}`,
+      programId: item.id,
+      requirements: item.requirements,
+      exclusions: item.exclusions,
+      notes: item.notes,
+      followUpQuestionIds: [],
+    },
+    exclusions: item.exclusions.map((text, index) => ({
+      id: `fallback-exclusion-${item.id}-${index + 1}`,
+      programId: item.id,
+      text,
+    })),
+    latestSource: {
+      id: "fallback-doc",
+      title: "로컬 시드 데이터",
+      issuer: "노무법인 위너스",
+      기준일: "2026-01-01",
+      publishedAt: "2026-01-01",
+      fileName: "client/src/lib/subsidyData.ts",
+      priority: 0,
+    },
+  }));
+}
+
+export function usePrograms() {
+  const [programs, setPrograms] = useState<OperationalProgram[]>(buildFallbackPrograms());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    fetchPrograms()
+      .then((payload) => {
+        if (!active) return;
+        setPrograms(payload.programs);
+      })
+      .catch((err: unknown) => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Failed to load programs");
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return { programs, loading, error };
+}

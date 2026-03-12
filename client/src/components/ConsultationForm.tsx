@@ -1,7 +1,4 @@
-// Design: Dark Fintech Minimal — Consultation request form with EmailJS integration
-// EmailJS setup: Service ID, Template ID, Public Key must be configured in .env
-// Recipient: abc@winhr.co.kr
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import emailjs from "@emailjs/browser";
 import {
@@ -13,24 +10,30 @@ import {
   CheckCircle2,
   ChevronDown,
   AlertCircle,
+  Database,
 } from "lucide-react";
+import type { DeterminationStatus } from "@shared/subsidy";
+import { createConsultationLead } from "@/lib/api";
 
-// ─── EmailJS 설정값 ───────────────────────────────────────────────────────────
-// 아래 3가지 값을 EmailJS 대시보드에서 발급받아 .env 파일에 입력하세요.
-// VITE_EMAILJS_SERVICE_ID   : Email Services 탭 → 서비스 ID
-// VITE_EMAILJS_TEMPLATE_ID  : Email Templates 탭 → 템플릿 ID
-// VITE_EMAILJS_PUBLIC_KEY   : Account → API Keys → Public Key
-const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  ?? "";
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID ?? "";
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID ?? "";
-const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  ?? "";
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY ?? "";
 
 const IS_CONFIGURED =
   EMAILJS_SERVICE_ID !== "" &&
   EMAILJS_TEMPLATE_ID !== "" &&
   EMAILJS_PUBLIC_KEY !== "";
 
+interface ConsultationContext {
+  sessionId?: string;
+  interestedProgramIds?: string[];
+  determinationStatuses?: Record<string, DeterminationStatus>;
+  missingItems?: string[];
+}
+
 interface ConsultationFormProps {
   subsidyName?: string;
+  context?: ConsultationContext;
 }
 
 const consultTypes = [
@@ -41,7 +44,7 @@ const consultTypes = [
   "기타 노무 상담",
 ];
 
-export default function ConsultationForm({ subsidyName }: ConsultationFormProps) {
+export default function ConsultationForm({ subsidyName, context }: ConsultationFormProps) {
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -53,6 +56,15 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const interestedProgramIds = context?.interestedProgramIds ?? [];
+  const determinationStatuses = context?.determinationStatuses ?? {};
+  const missingItems = context?.missingItems ?? [];
+  const statusSummary = useMemo(
+    () =>
+      Object.entries(determinationStatuses).map(([programId, status]) => `${programId}: ${status}`),
+    [determinationStatuses],
+  );
 
   const handleChange = (field: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -76,50 +88,56 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
     setLoading(true);
     setError(null);
 
-    // EmailJS가 설정되지 않은 경우 — 개발 환경 fallback
-    if (!IS_CONFIGURED) {
-      await new Promise((r) => setTimeout(r, 800));
-      setLoading(false);
-      setSubmitted(true);
-      return;
-    }
-
     try {
-      const now = new Date();
-      const dateStr = now.toLocaleString("ko-KR", {
-        timeZone: "Asia/Seoul",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
+      await createConsultationLead({
+        name: form.name,
+        phone: form.phone,
+        company: form.company,
+        consultType: form.consultType,
+        message: form.message,
+        subsidyName,
+        sessionId: context?.sessionId,
+        interestedProgramIds,
+        determinationStatuses,
+        missingItems,
       });
 
-      // EmailJS 템플릿 변수 — 대시보드 템플릿에서 동일한 변수명 사용
-      const templateParams = {
-        to_email:      "abc@winhr.co.kr",
-        from_name:     form.name,
-        from_phone:    form.phone,
-        from_company:  form.company || "(미입력)",
-        consult_type:  form.consultType,
-        subsidy_name:  subsidyName ?? "일반 상담",
-        message:       form.message || "(내용 없음)",
-        submitted_at:  dateStr,
-      };
+      if (IS_CONFIGURED) {
+        const now = new Date();
+        const dateStr = now.toLocaleString("ko-KR", {
+          timeZone: "Asia/Seoul",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
-      );
+        const templateParams = {
+          to_email: "abc@winhr.co.kr",
+          from_name: form.name,
+          from_phone: form.phone,
+          from_company: form.company || "(미입력)",
+          consult_type: form.consultType,
+          subsidy_name: subsidyName ?? "일반 상담",
+          message: form.message || "(내용 없음)",
+          submitted_at: dateStr,
+          determination_summary: statusSummary.join(", ") || "(판정 정보 없음)",
+          missing_items: missingItems.join(", ") || "(보완 항목 없음)",
+        };
+
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          templateParams,
+          EMAILJS_PUBLIC_KEY,
+        );
+      }
 
       setSubmitted(true);
     } catch (err) {
-      console.error("EmailJS error:", err);
-      setError(
-        "이메일 발송 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 직접 연락해 주세요."
-      );
+      console.error("Consultation submit error:", err);
+      setError("상담 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
@@ -153,7 +171,6 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
         border: "1px solid rgba(255,255,255,0.07)",
       }}
     >
-      {/* Header */}
       <div
         className="px-6 py-5 flex items-center gap-3"
         style={{
@@ -175,7 +192,7 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
           <p className="text-xs mt-0.5" style={{ color: "rgba(248,250,252,0.45)" }}>
             {subsidyName
               ? `${subsidyName} 관련 전문 노무사와 1:1 상담`
-              : "고용장려금 신청 전 전문 노무사와 1:1 상담"}
+              : "판정 결과를 바탕으로 지원금 신청 가능성을 함께 점검합니다."}
           </p>
         </div>
         <div
@@ -200,7 +217,21 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* EmailJS 미설정 안내 배너 */}
+              <div
+                className="flex items-start gap-2 p-3 rounded-xl mb-4 text-xs"
+                style={{
+                  background: "rgba(59,130,246,0.08)",
+                  border: "1px solid rgba(59,130,246,0.2)",
+                  color: "#93C5FD",
+                }}
+              >
+                <Database size={14} className="flex-shrink-0 mt-0.5" />
+                <span>
+                  상담 요청은 운영 DB에도 저장되어 후속 검토와 문서 준비에 활용됩니다.
+                  {statusSummary.length > 0 && ` 현재 판정 요약: ${statusSummary.join(", ")}`}
+                </span>
+              </div>
+
               {!IS_CONFIGURED && (
                 <div
                   className="flex items-start gap-2 p-3 rounded-xl mb-4 text-xs"
@@ -212,8 +243,7 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                 >
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>
-                    EmailJS 설정이 완료되지 않았습니다. 아래 안내에 따라 환경변수를 설정하면 실제 이메일이 발송됩니다.
-                    현재는 테스트 모드로 동작합니다.
+                    EmailJS 설정이 없어 이메일은 전송되지 않지만, 상담 DB에는 정상 저장됩니다.
                   </span>
                 </div>
               )}
@@ -231,12 +261,6 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                     placeholder="홍길동"
                     value={form.name}
                     onChange={(e) => handleChange("name", e.target.value)}
-                    onFocus={(e) =>
-                      (e.target.style.borderColor = "rgba(59,130,246,0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.borderColor = "rgba(255,255,255,0.1)")
-                    }
                   />
                 </div>
                 <div>
@@ -250,15 +274,7 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                     style={inputStyle}
                     placeholder="010-0000-0000"
                     value={form.phone}
-                    onChange={(e) =>
-                      handleChange("phone", formatPhone(e.target.value))
-                    }
-                    onFocus={(e) =>
-                      (e.target.style.borderColor = "rgba(59,130,246,0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.borderColor = "rgba(255,255,255,0.1)")
-                    }
+                    onChange={(e) => handleChange("phone", formatPhone(e.target.value))}
                   />
                 </div>
                 <div>
@@ -273,12 +289,6 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                     placeholder="(주)회사명"
                     value={form.company}
                     onChange={(e) => handleChange("company", e.target.value)}
-                    onFocus={(e) =>
-                      (e.target.style.borderColor = "rgba(59,130,246,0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.borderColor = "rgba(255,255,255,0.1)")
-                    }
                   />
                 </div>
                 <div>
@@ -292,22 +302,10 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                         appearance: "none",
                       }}
                       value={form.consultType}
-                      onChange={(e) =>
-                        handleChange("consultType", e.target.value)
-                      }
-                      onFocus={(e) =>
-                        (e.target.style.borderColor = "rgba(59,130,246,0.5)")
-                      }
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = "rgba(255,255,255,0.1)")
-                      }
+                      onChange={(e) => handleChange("consultType", e.target.value)}
                     >
                       {consultTypes.map((t) => (
-                        <option
-                          key={t}
-                          value={t}
-                          style={{ background: "#0A0E1A" }}
-                        >
+                        <option key={t} value={t} style={{ background: "#0A0E1A" }}>
                           {t}
                         </option>
                       ))}
@@ -328,20 +326,26 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                   placeholder={
                     subsidyName
                       ? `${subsidyName} 관련 문의 내용을 입력해주세요.`
-                      : "문의하실 내용을 간략히 입력해주세요."
+                      : "판정 결과에서 궁금한 점이나 준비가 필요한 내용을 입력해주세요."
                   }
                   value={form.message}
                   onChange={(e) => handleChange("message", e.target.value)}
-                  onFocus={(e) =>
-                    (e.target.style.borderColor = "rgba(59,130,246,0.5)")
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = "rgba(255,255,255,0.1)")
-                  }
                 />
               </div>
 
-              {/* Privacy consent */}
+              {missingItems.length > 0 && (
+                <div
+                  className="p-3 rounded-xl mb-4 text-xs"
+                  style={{
+                    background: "rgba(245,158,11,0.08)",
+                    border: "1px solid rgba(245,158,11,0.2)",
+                    color: "#FCD34D",
+                  }}
+                >
+                  보완 필요 항목: {missingItems.join(", ")}
+                </div>
+              )}
+
               <label className="flex items-start gap-3 mb-5 cursor-pointer">
                 <div
                   className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
@@ -353,25 +357,19 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                       ? "none"
                       : "1px solid rgba(255,255,255,0.15)",
                   }}
-                  onClick={() =>
-                    handleChange("agreePrivacy", !form.agreePrivacy)
-                  }
+                  onClick={() => handleChange("agreePrivacy", !form.agreePrivacy)}
                 >
-                  {form.agreePrivacy && (
-                    <CheckCircle2 size={13} style={{ color: "#fff" }} />
-                  )}
+                  {form.agreePrivacy && <CheckCircle2 size={13} style={{ color: "#fff" }} />}
                 </div>
                 <span
                   className="text-xs leading-relaxed"
                   style={{ color: "rgba(248,250,252,0.5)" }}
                 >
-                  개인정보 수집 및 이용에 동의합니다. 수집된 정보는 상담
-                  목적으로만 사용되며, 상담 완료 후 즉시 파기됩니다.{" "}
-                  <span style={{ color: "#60A5FA" }}>(필수)</span>
+                  개인정보 수집 및 이용에 동의합니다. 수집된 정보는 상담과 후속 지원금 검토 목적으로만 사용됩니다.
+                  <span style={{ color: "#60A5FA" }}> (필수)</span>
                 </span>
               </label>
 
-              {/* Error message */}
               {error && (
                 <div
                   className="flex items-center gap-2 p-3 rounded-xl mb-4 text-xs"
@@ -393,9 +391,7 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                     ? "linear-gradient(135deg, #3B82F6, #2563EB)"
                     : "rgba(255,255,255,0.06)",
                   color: isValid ? "#fff" : "rgba(248,250,252,0.3)",
-                  boxShadow: isValid
-                    ? "0 0 25px rgba(59,130,246,0.3)"
-                    : "none",
+                  boxShadow: isValid ? "0 0 25px rgba(59,130,246,0.3)" : "none",
                   cursor: isValid ? "pointer" : "not-allowed",
                 }}
                 onClick={handleSubmit}
@@ -410,7 +406,7 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
                         borderTopColor: "#fff",
                       }}
                     />
-                    발송 중...
+                    접수 중...
                   </>
                 ) : (
                   <>
@@ -437,45 +433,15 @@ export default function ConsultationForm({ subsidyName }: ConsultationFormProps)
               >
                 <CheckCircle2 size={32} style={{ color: "#34D399" }} />
               </div>
-              <h4
-                className="text-lg font-bold mb-2"
-                style={{ color: "#F8FAFC" }}
-              >
+              <h4 className="text-lg font-bold mb-2" style={{ color: "#F8FAFC" }}>
                 상담 신청 완료
               </h4>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "rgba(248,250,252,0.5)" }}
-              >
-                <strong style={{ color: "#F8FAFC" }}>{form.name}</strong>님,
-                신청해주셔서 감사합니다.
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.5)" }}>
+                <strong style={{ color: "#F8FAFC" }}>{form.name}</strong>님, 접수가 완료되었습니다.
                 <br />
-                영업일 기준 1~2일 내에{" "}
-                <strong style={{ color: "#F8FAFC" }}>{form.phone}</strong>으로
-                <br />
-                전문 노무사가 연락드리겠습니다.
+                영업일 기준 1~2일 내에 <strong style={{ color: "#F8FAFC" }}>{form.phone}</strong>로
+                연락드리겠습니다.
               </p>
-              <button
-                className="mt-5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-                style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "rgba(248,250,252,0.6)",
-                }}
-                onClick={() => {
-                  setSubmitted(false);
-                  setForm({
-                    ...form,
-                    name: "",
-                    phone: "",
-                    company: "",
-                    message: "",
-                    agreePrivacy: false,
-                  });
-                }}
-              >
-                다시 신청하기
-              </button>
             </motion.div>
           )}
         </AnimatePresence>

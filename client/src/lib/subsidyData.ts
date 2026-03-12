@@ -5,41 +5,7 @@
 // - 고용노동부, 2026 고령자 계속고용장려금 가이드북
 // ============================================================
 
-export type CompanySize = "우선지원대상기업" | "중견기업" | "대규모기업";
-export type SubsidyCategory =
-  | "고용창출장려금"
-  | "고용안정장려금"
-  | "고용유지지원금"
-  | "청년고용장려금"
-  | "장년고용장려금"
-  | "고용환경개선장려금"
-  | "장애인고용"
-  | "지역고용촉진지원금"
-  | "정규직전환지원";
-
-export interface SubsidyAmount {
-  우선지원대상기업?: string;
-  중견기업?: string;
-  대규모기업?: string;
-  공통?: string;
-}
-
-export interface SubsidyItem {
-  id: string;
-  category: SubsidyCategory;
-  name: string;
-  subName?: string;
-  description: string;
-  requirements: string[];
-  amount: SubsidyAmount;
-  amountLabel: string;
-  duration: string;
-  applicationCycle: string;
-  exclusions: string[];
-  notes: string[];
-  tags: string[];
-  highlight?: boolean;
-}
+import type { SubsidyCategory, SubsidyItem } from "@shared/subsidy";
 
 export const subsidyData: SubsidyItem[] = [
   {
