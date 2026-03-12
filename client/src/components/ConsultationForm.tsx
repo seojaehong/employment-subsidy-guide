@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { DeterminationStatus } from "@shared/subsidy";
 import { createConsultationLead } from "@/lib/api";
+import { usePrograms } from "@/hooks/usePrograms";
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID ?? "";
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID ?? "";
@@ -44,7 +45,15 @@ const consultTypes = [
   "기타 노무 상담",
 ];
 
+const determinationStatusLabels: Record<DeterminationStatus, string> = {
+  eligible: "신청 가능",
+  needs_followup: "보완 필요",
+  ineligible: "현재 제외",
+  manual_review: "추가 확인 필요",
+};
+
 export default function ConsultationForm({ subsidyName, context }: ConsultationFormProps) {
+  const { programs } = usePrograms();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -60,10 +69,18 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
   const interestedProgramIds = context?.interestedProgramIds ?? [];
   const determinationStatuses = context?.determinationStatuses ?? {};
   const missingItems = context?.missingItems ?? [];
+  const programNameLookup = useMemo(
+    () => new Map(programs.map((program) => [program.program.legacyId, program.program.name])),
+    [programs],
+  );
   const statusSummary = useMemo(
     () =>
-      Object.entries(determinationStatuses).map(([programId, status]) => `${programId}: ${status}`),
-    [determinationStatuses],
+      Object.entries(determinationStatuses).map(([programId, status]) => {
+        const programName = programNameLookup.get(programId) ?? programId;
+        const statusLabel = determinationStatusLabels[status] ?? status;
+        return `${programName} - ${statusLabel}`;
+      }),
+    [determinationStatuses, programNameLookup],
   );
 
   const handleChange = (field: string, value: string | boolean) => {
