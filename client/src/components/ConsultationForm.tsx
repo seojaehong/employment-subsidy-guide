@@ -142,12 +142,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
       setSubmitted(true);
     } catch (err) {
       console.error("Consultation submit error:", err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : typeof err === "string"
-            ? err
-            : "상담 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+      const message = formatErrorMessage(err);
       setError(message);
     } finally {
       setLoading(false);
@@ -459,4 +454,32 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
       </div>
     </div>
   );
+}
+
+function formatErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  if (error && typeof error === "object") {
+    const candidate = error as {
+      text?: string;
+      status?: number;
+      message?: string;
+    };
+
+    if (candidate.message) {
+      return candidate.message;
+    }
+
+    if (candidate.status || candidate.text) {
+      return `EmailJS 오류${candidate.status ? ` (${candidate.status})` : ""}: ${candidate.text ?? "응답 확인 필요"}`;
+    }
+  }
+
+  return "상담 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
 }

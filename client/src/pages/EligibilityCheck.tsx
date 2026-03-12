@@ -151,6 +151,7 @@ export default function EligibilityCheck() {
     const value = followUpAnswers[question.id];
     return typeof value === "string" && value.length > 0;
   });
+  const hasFollowUpQuestions = followUpQuestions.length > 0;
 
   const programLookup = useMemo(() => {
     return new Map(programs.map((program) => [program.program.legacyId, program]));
@@ -182,6 +183,30 @@ export default function EligibilityCheck() {
         .filter(Boolean) as OperationalProgram[];
       setRecommendedPrograms(resolvedPrograms);
       setFollowUpQuestions(payload.followUpQuestions);
+      if (payload.followUpQuestions.length === 0) {
+        const nextReports = determinePrograms(
+          resolvedPrograms.map((program) => program.program.legacyId),
+          normalisedBaseAnswers,
+          {},
+        ).map((determination) => ({
+          ...determination,
+          program: programLookup.get(determination.programId) ?? null,
+        }));
+        setReports(nextReports);
+        sessionStorage.setItem(
+          "eligibility-session",
+          JSON.stringify({
+            session: {
+              id: payload.session.id,
+              baseAnswers: normalisedBaseAnswers,
+            },
+            reports: nextReports,
+          }),
+        );
+        setFlowStep("result");
+        return;
+      }
+
       setFlowStep("followup");
     } catch (err) {
       setError(err instanceof Error ? err.message : "추천 결과를 생성하지 못했습니다.");
@@ -470,6 +495,19 @@ export default function EligibilityCheck() {
                       </p>
                     </div>
 
+                    {!hasFollowUpQuestions && (
+                      <div
+                        className="p-6 rounded-2xl text-sm"
+                        style={{
+                          background: "rgba(59,130,246,0.06)",
+                          border: "1px solid rgba(59,130,246,0.15)",
+                          color: "rgba(248,250,252,0.72)",
+                        }}
+                      >
+                        추가 질문이 없는 후보 제도입니다. 바로 판정 리포트를 생성해도 됩니다.
+                      </div>
+                    )}
+
                     {recommendedPrograms.map((program) => {
                       const questions = followUpQuestions.filter(
                         (question) => question.programId === program.program.legacyId,
@@ -531,13 +569,13 @@ export default function EligibilityCheck() {
                       <button
                         className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
                         style={{
-                          background: canSubmitFollowUp
+                          background: (!hasFollowUpQuestions || canSubmitFollowUp)
                             ? "linear-gradient(135deg, #10B981, #059669)"
                             : "rgba(255,255,255,0.05)",
-                          color: canSubmitFollowUp ? "#fff" : "rgba(248,250,252,0.3)",
-                          boxShadow: canSubmitFollowUp ? "0 0 20px rgba(16,185,129,0.3)" : "none",
+                          color: (!hasFollowUpQuestions || canSubmitFollowUp) ? "#fff" : "rgba(248,250,252,0.3)",
+                          boxShadow: (!hasFollowUpQuestions || canSubmitFollowUp) ? "0 0 20px rgba(16,185,129,0.3)" : "none",
                         }}
-                        disabled={!canSubmitFollowUp || loading}
+                        disabled={(hasFollowUpQuestions && !canSubmitFollowUp) || loading}
                         onClick={() => void submitDetermination()}
                       >
                         판정 리포트 생성
