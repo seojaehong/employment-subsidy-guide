@@ -68,8 +68,8 @@ const categoryDescriptions: Record<string, string> = {
 };
 
 const highlights = [
-  { icon: <CheckCircle2 size={16} />, text: "2026년 최신 기준 반영" },
-  { icon: <CheckCircle2 size={16} />, text: "노무법인 위너스 검토 완료" },
+  { icon: <CheckCircle2 size={16} />, text: "2026년 1월 공식 가이드 반영" },
+  { icon: <CheckCircle2 size={16} />, text: "고령자 계속고용 2026 가이드 반영" },
   { icon: <CheckCircle2 size={16} />, text: "17개 지원금 제도 수록" },
 ];
 
@@ -139,7 +139,7 @@ export default function Home() {
                   color: "#93C5FD",
                 }}
               >
-                2026년도 최신 기준
+                2026년 공식 가이드 기준
               </span>
               <span
                 className="px-3 py-1 rounded-full text-xs font-semibold"
@@ -185,7 +185,7 @@ export default function Home() {
               className="text-lg md:text-xl leading-relaxed mb-8"
               style={{ color: "rgba(248,250,252,0.65)" }}
             >
-              2026년도 고용창출·고용안정·출산육아·청년·장년 등<br className="hidden md:block" />
+              2026년 고용노동부 가이드 기준 고용창출·고용안정·출산육아·청년·장년 등<br className="hidden md:block" />
               17개 고용장려금 제도를 한눈에 확인하고 신청 자격을 검토하세요.
             </motion.p>
 
@@ -633,7 +633,7 @@ export default function Home() {
               {
                 step: "01",
                 title: "지원금 안내 확인",
-                desc: "17개 고용장려금 제도의 지원요건, 금액, 신청 방법을 상세히 확인합니다.",
+                desc: "17개 고용장려금 제도의 지원요건, 금액, 신청 방법을 공식 가이드 기준으로 확인합니다.",
                 color: "#60A5FA",
                 icon: <Briefcase size={24} />,
               },
@@ -780,7 +780,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-xs" style={{ color: "rgba(248,250,252,0.35)" }}>
-                노무법인 위너스 제공 · 2026년도 고용장려금 적합여부 검토 기반
+                노무법인 위너스 제공 · 고용노동부 2026 공식 가이드 반영
               </p>
             </div>
             <div className="flex gap-6">
