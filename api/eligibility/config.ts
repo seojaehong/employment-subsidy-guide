@@ -1,4 +1,4 @@
-import { getEligibilityRuntimeConfig } from "./lib.ts";
+import { getEligibilityRuntimeConfig } from "./lib.js";
 
 export default function handler(req: any, res: any) {
   if (req.method !== "GET") {

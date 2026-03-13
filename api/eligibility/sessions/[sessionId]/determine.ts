@@ -1,4 +1,4 @@
-import { determineEligibilitySessionRecord } from "../../lib.ts";
+import { determineEligibilitySessionRecord } from "../../lib.js";
 
 function readBody(req: any) {
   return new Promise<any>((resolve, reject) => {

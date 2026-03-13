@@ -4,8 +4,8 @@ import type {
   DeterminationStatus,
   FollowUpAnswers,
   RecommendationRecord,
-} from "./types.ts";
-import { RECOMMENDATION_TARGETS } from "./types.ts";
+} from "./types.js";
+import { RECOMMENDATION_TARGETS } from "./types.js";
 
 export function recommendProgramIds(baseAnswers: BaseEligibilityAnswers) {
   const recommendations: RecommendationRecord[] = [];

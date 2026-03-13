@@ -28,7 +28,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     const baseAnswers = await readBody(req);
-    const { createEligibilitySessionRecord } = await import("./lib.ts");
+    const { createEligibilitySessionRecord } = await import("./lib.js");
     const payload = await createEligibilitySessionRecord(baseAnswers);
 
     res.status(201).json({

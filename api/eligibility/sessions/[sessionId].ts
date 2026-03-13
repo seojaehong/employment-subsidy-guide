@@ -1,4 +1,4 @@
-import { getEligibilitySessionRecord } from "../lib.ts";
+import { getEligibilitySessionRecord } from "../lib.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {

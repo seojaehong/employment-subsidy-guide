@@ -1,4 +1,4 @@
-import { determinePrograms, recommendProgramIds } from "./engine.ts";
+import { determinePrograms, recommendProgramIds } from "./engine.js";
 import {
   getEligibilityConfig,
   getProgramFollowUpQuestions,
@@ -7,7 +7,7 @@ import {
   type EligibilityQuestionRecord,
   type FollowUpAnswers,
   type RecommendationRecord,
-} from "./types.ts";
+} from "./types.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
