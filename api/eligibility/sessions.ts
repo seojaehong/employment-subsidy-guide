@@ -1,5 +1,5 @@
-import type { BaseEligibilityAnswers, RecommendationRecord } from "../../shared/subsidy";
-import { createEligibilitySessionRecord } from "../../server/eligibility-persistence";
+import type { BaseEligibilityAnswers, RecommendationRecord } from "../../shared/subsidy.ts";
+import { createEligibilitySessionRecord } from "../../server/eligibility-persistence.ts";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);

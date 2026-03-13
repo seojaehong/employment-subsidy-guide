@@ -1,5 +1,5 @@
-import { getEligibilityConfig } from "../../shared/subsidy";
-import { getEligibilityQuestions } from "../../server/eligibility-persistence";
+import { getEligibilityConfig } from "../../shared/subsidy.ts";
+import { getEligibilityQuestions } from "../../server/eligibility-persistence.ts";
 
 export default function handler(req: any, res: any) {
   if (req.method !== "GET") {

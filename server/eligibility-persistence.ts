@@ -8,7 +8,7 @@ import {
   type EligibilityQuestionRecord,
   type FollowUpAnswers,
   type RecommendationRecord,
-} from "../shared/subsidy";
+} from "../shared/subsidy.ts";
 
 const require = createRequire(import.meta.url);
 const seedDb = require("./data/seed-db.json") as {

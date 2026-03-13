@@ -1,4 +1,4 @@
-import { getEligibilitySessionRecord } from "../../../server/eligibility-persistence";
+import { getEligibilitySessionRecord } from "../../../server/eligibility-persistence.ts";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {

@@ -1,5 +1,5 @@
-import type { FollowUpAnswers } from "../../../../shared/subsidy";
-import { determineEligibilitySessionRecord } from "../../../../server/eligibility-persistence";
+import type { FollowUpAnswers } from "../../../../shared/subsidy.ts";
+import { determineEligibilitySessionRecord } from "../../../../server/eligibility-persistence.ts";
 
 function readBody(req: any) {
   return new Promise<FollowUpAnswers>((resolve, reject) => {
