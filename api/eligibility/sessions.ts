@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const seedDb = require("../../../server/data/seed-db.json") as {
+const seedDb = require("../../server/data/seed-db.json") as {
   subsidy_program: Array<{
     legacyId: string;
     published: boolean;
