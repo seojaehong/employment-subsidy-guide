@@ -76,6 +76,14 @@ function isSupabaseConfigured() {
   return SUPABASE_URL !== "" && SUPABASE_SERVICE_ROLE_KEY !== "";
 }
 
+function getSupabaseDebugInfo() {
+  return {
+    hasSupabaseUrl: SUPABASE_URL !== "",
+    hasServiceRoleKey: SUPABASE_SERVICE_ROLE_KEY !== "",
+    supabaseHost: SUPABASE_URL ? new URL(SUPABASE_URL).host : null,
+  };
+}
+
 async function insertConsultationLead(payload: Omit<ConsultationLeadRow, "id" | "created_at">) {
   if (!isSupabaseConfigured()) {
     return null;
@@ -155,11 +163,12 @@ export default async function handler(req: any, res: any) {
         storage: "memory-fallback",
         warning: "Supabase insert failed; stored in runtime fallback instead.",
         supabaseError: errorMessage,
+        debug: getSupabaseDebugInfo(),
       });
       return;
     }
   }
 
   getLeads().unshift(lead);
-  res.status(201).json({ lead, storage: "memory" });
+  res.status(201).json({ lead, storage: "memory", debug: getSupabaseDebugInfo() });
 }
