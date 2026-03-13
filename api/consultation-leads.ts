@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { insertConsultationLead, isSupabaseConfigured } from "../server/supabase.ts";
+import { insertConsultationLead, isSupabaseConfigured } from "../server/supabase";
 
 interface ConsultationLeadPayload {
   name: string;
