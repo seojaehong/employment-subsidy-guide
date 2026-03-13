@@ -1,5 +1,3 @@
-import { createEligibilitySessionRecord } from "./lib.ts";
-
 function readBody(req: any) {
   return new Promise<any>((resolve, reject) => {
     if (req.body && typeof req.body === "object") {
@@ -30,6 +28,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     const baseAnswers = await readBody(req);
+    const { createEligibilitySessionRecord } = await import("./lib.ts");
     const payload = await createEligibilitySessionRecord(baseAnswers);
 
     res.status(201).json({
