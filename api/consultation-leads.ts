@@ -1,5 +1,4 @@
 import { nanoid } from "nanoid";
-import { insertConsultationLead, isSupabaseConfigured } from "../server/supabase";
 
 interface ConsultationLeadPayload {
   name: string;
@@ -14,11 +13,29 @@ interface ConsultationLeadPayload {
   missingItems: string[];
 }
 
+interface ConsultationLeadRow {
+  id: string;
+  created_at: string;
+  name: string;
+  phone: string;
+  company: string | null;
+  consult_type: string;
+  message: string | null;
+  subsidy_name: string | null;
+  session_id: string | null;
+  interested_program_ids: string[];
+  determination_statuses: Record<string, string>;
+  missing_items: string[];
+}
+
 declare global {
   var __employmentConsultationLeads: Array<
     ConsultationLeadPayload & { id: string; createdAt: string }
   > | undefined;
 }
+
+const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 function getLeads() {
   if (!globalThis.__employmentConsultationLeads) {
@@ -53,6 +70,40 @@ function readBody(req: any) {
     });
     req.on("error", reject);
   });
+}
+
+function isSupabaseConfigured() {
+  return SUPABASE_URL !== "" && SUPABASE_SERVICE_ROLE_KEY !== "";
+}
+
+async function insertConsultationLead(payload: Omit<ConsultationLeadRow, "id" | "created_at">) {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/consultation_leads`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await response.text();
+  const parsed = text ? (JSON.parse(text) as ConsultationLeadRow[] | { message?: string; details?: string }) : null;
+
+  if (!response.ok) {
+    const message =
+      (parsed && !Array.isArray(parsed) ? parsed.message ?? parsed.details : null) ??
+      text ??
+      `Supabase insert failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return Array.isArray(parsed) ? parsed[0] ?? null : null;
 }
 
 export default async function handler(req: any, res: any) {
