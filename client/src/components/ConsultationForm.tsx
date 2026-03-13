@@ -280,6 +280,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                     </span>
                   </label>
                   <input
+                    data-testid="consultation-name-input"
                     style={inputStyle}
                     placeholder="홍길동"
                     value={form.name}
@@ -294,6 +295,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                     </span>
                   </label>
                   <input
+                    data-testid="consultation-phone-input"
                     style={inputStyle}
                     placeholder="010-0000-0000"
                     value={form.phone}
@@ -308,6 +310,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                     </span>
                   </label>
                   <input
+                    data-testid="consultation-company-input"
                     style={inputStyle}
                     placeholder="(주)회사명"
                     value={form.company}
@@ -318,6 +321,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                   <label style={labelStyle}>상담 유형</label>
                   <div className="relative">
                     <select
+                      data-testid="consultation-type-select"
                       style={{
                         ...inputStyle,
                         paddingRight: "36px",
@@ -345,6 +349,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
               <div className="mb-4">
                 <label style={labelStyle}>문의 내용</label>
                 <textarea
+                  data-testid="consultation-message-input"
                   style={{ ...inputStyle, resize: "vertical", minHeight: "80px" }}
                   placeholder={
                     subsidyName
@@ -371,6 +376,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
 
               <label className="flex items-start gap-3 mb-5 cursor-pointer">
                 <div
+                  data-testid="consultation-agree-toggle"
                   className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
                   style={{
                     background: form.agreePrivacy
@@ -408,6 +414,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
               )}
 
               <button
+                data-testid="consultation-submit-button"
                 className="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
                 style={{
                   background: isValid
@@ -442,6 +449,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
           ) : (
             <motion.div
               key="success"
+              data-testid="consultation-success-state"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}

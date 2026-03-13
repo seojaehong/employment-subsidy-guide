@@ -274,6 +274,7 @@ export default function EligibilityCheck() {
         return (
           <button
             key={option.value}
+            data-testid={`eligibility-option-${question.id}-${option.value}`}
             className="flex items-center gap-3 p-4 rounded-xl text-left transition-all duration-200"
             style={{
               background: isSelected ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
@@ -402,6 +403,7 @@ export default function EligibilityCheck() {
                   </button>
 
                   <button
+                    data-testid="common-next-button"
                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
                     style={{
                       background: canProceedCommon
@@ -555,6 +557,7 @@ export default function EligibilityCheck() {
 
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
+                        data-testid="followup-back-button"
                         className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-semibold transition-all"
                         style={{
                           background: "rgba(255,255,255,0.05)",
@@ -567,6 +570,7 @@ export default function EligibilityCheck() {
                         1단계로 돌아가기
                       </button>
                       <button
+                        data-testid="followup-submit-button"
                         className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
                         style={{
                           background: (!hasFollowUpQuestions || canSubmitFollowUp)
@@ -715,6 +719,7 @@ export default function EligibilityCheck() {
 
                 <div className="flex flex-col sm:flex-row gap-3 mb-10">
                   <button
+                    data-testid="result-reset-button"
                     className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-semibold transition-all"
                     style={{
                       background: "rgba(255,255,255,0.05)",
@@ -728,6 +733,7 @@ export default function EligibilityCheck() {
                   </button>
                   <Link href="/subsidies">
                     <button
+                      data-testid="result-view-subsidies-button"
                       className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
                       style={{
                         background: "linear-gradient(135deg, #3B82F6, #2563EB)",
