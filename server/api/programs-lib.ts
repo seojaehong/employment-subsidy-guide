@@ -5,10 +5,10 @@ import type {
   SubsidyExclusionRecord,
   SubsidyProgramRecord,
   SubsidyRuleRecord,
-} from "../shared/subsidy";
+} from "../../shared/subsidy";
 
 const require = createRequire(import.meta.url);
-const seedDb = require("../server/data/seed-db.json") as {
+const seedDb = require("../data/seed-db.json") as {
   subsidy_program: SubsidyProgramRecord[];
   subsidy_rule: SubsidyRuleRecord[];
   subsidy_exclusion: SubsidyExclusionRecord[];

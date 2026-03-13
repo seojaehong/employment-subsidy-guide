@@ -7,7 +7,7 @@ import type {
   ProgramDraftRecord,
   QuestionSetVersion,
   RuleDefinition,
-} from "../shared/subsidy";
+} from "../../shared/subsidy";
 import { nanoid } from "nanoid";
 import { getDefaultQuestionSeeds, getDefaultRuleSeeds } from "./admin-seed.js";
 import { fetchOperationalPrograms } from "./programs-lib.js";

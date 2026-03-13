@@ -13,7 +13,7 @@ import {
   replaceRuleDefinitions,
   requireAdminSession,
   updateDocument,
-} from "../admin-lib.js";
+} from "../../server/api/admin-lib.js";
 
 function getSegments(req: any) {
   const raw = req.query.slug;

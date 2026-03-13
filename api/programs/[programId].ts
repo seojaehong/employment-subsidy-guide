@@ -1,4 +1,4 @@
-import { fetchOperationalProgram } from "../programs-lib.js";
+import { fetchOperationalProgram } from "../../server/api/programs-lib.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {

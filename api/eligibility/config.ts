@@ -1,4 +1,4 @@
-import { getEligibilityRuntimeConfig } from "./lib.js";
+import { getEligibilityRuntimeConfig } from "../../server/api/eligibility/lib.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {

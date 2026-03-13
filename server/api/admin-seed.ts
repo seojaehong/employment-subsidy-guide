@@ -3,8 +3,8 @@ import type {
   ProgramDraftRecord,
   QuestionSetVersion,
   RuleDefinition,
-} from "../shared/subsidy";
-import { getCommonEligibilityQuestions, getProgramFollowUpQuestions } from "../shared/subsidy";
+} from "../../shared/subsidy";
+import { getCommonEligibilityQuestions, getProgramFollowUpQuestions } from "../../shared/subsidy";
 
 function buildQuestionSeed(question: EligibilityQuestionRecord): Omit<QuestionSetVersion, "id"> {
   return {
