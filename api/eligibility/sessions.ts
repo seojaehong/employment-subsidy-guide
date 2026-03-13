@@ -1,5 +1,5 @@
-import type { BaseEligibilityAnswers } from "../../../shared/subsidy";
-import { createEligibilitySessionRecord } from "../../../server/eligibility-persistence";
+import type { BaseEligibilityAnswers, RecommendationRecord } from "../../shared/subsidy";
+import { createEligibilitySessionRecord } from "../../server/eligibility-persistence";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -82,7 +82,7 @@ export default async function handler(req: any, res: any) {
         baseAnswers: payload.session.baseAnswers,
         recommendations: payload.session.recommendations,
       },
-      recommendedPrograms: payload.session.recommendations.map((recommendation) => ({
+      recommendedPrograms: payload.session.recommendations.map((recommendation: RecommendationRecord) => ({
         ...recommendation,
         program: getOperationalProgram(recommendation.programId),
       })),
