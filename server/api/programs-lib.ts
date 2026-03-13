@@ -252,7 +252,8 @@ export async function fetchOperationalPrograms() {
       ),
       source: "supabase" as const,
     };
-  } catch {
+  } catch (error) {
+    console.error("fetchOperationalPrograms failed", error);
     return { programs: buildSeedPrograms(), source: "seed-fallback" as const };
   }
 }

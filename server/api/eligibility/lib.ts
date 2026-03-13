@@ -208,8 +208,8 @@ async function getEligibilityArtifacts() {
     if (questions && questions.length > 0 && rules && rules.length > 0) {
       return { questions, rules, source: "supabase" as const };
     }
-  } catch {
-    // fall back below
+  } catch (error) {
+    console.error("getEligibilityArtifacts failed", error);
   }
 
   const localQuestions = getLocalEligibilityConfig().commonQuestions.concat(getLocalProgramFollowUpQuestions());
