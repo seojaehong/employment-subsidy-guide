@@ -1,54 +1,45 @@
-import { expect, test, type Page } from "playwright/test";
+import { expect, test, type APIRequestContext } from "playwright/test";
 
-async function runCommonFlow(
-  page: Page,
-  params: {
-    companySize: "우선지원대상기업" | "중견기업" | "대규모기업";
-    situation:
-      | "newHire"
-      | "youthHire"
-      | "elderlyHire"
-      | "regionalExpansion"
-      | "regularConversion";
-    workforceRange: "under5" | "5to29" | "30to99" | "over100";
-    locationType: "metropolitan" | "nonMetropolitan";
+async function createAndDetermine(
+  request: APIRequestContext,
+  baseURL: string,
+  payload: {
+    baseAnswers: {
+      companySize: "우선지원대상기업" | "중견기업" | "대규모기업";
+      workforceRange: "under5" | "5to29" | "30to99" | "over100";
+      locationType: "metropolitan" | "nonMetropolitan";
+      situations: string[];
+    };
+    followUpAnswers: Record<string, string>;
   },
 ) {
-  await page.goto("/check");
-  await expect(page.getByRole("heading", { name: "고용장려금 자격 검토" })).toBeVisible();
+  const createResponse = await request.post(`${baseURL}/api/eligibility/sessions`, {
+    data: payload.baseAnswers,
+  });
+  expect(createResponse.ok()).toBeTruthy();
+  const createJson = await createResponse.json();
 
-  await page.getByTestId(`eligibility-option-companySize-${params.companySize}`).click();
-  await page.getByTestId("common-next-button").click();
+  const determineResponse = await request.post(
+    `${baseURL}/api/eligibility/sessions/${createJson.session.id}/determine`,
+    {
+      data: payload.followUpAnswers,
+    },
+  );
+  expect(determineResponse.ok()).toBeTruthy();
+  const determineJson = await determineResponse.json();
 
-  await page.getByTestId(`eligibility-option-situations-${params.situation}`).click();
-  await page.getByTestId("common-next-button").click();
-
-  await page.getByTestId(`eligibility-option-workforceRange-${params.workforceRange}`).click();
-  await page.getByTestId("common-next-button").click();
-
-  await page.getByTestId(`eligibility-option-locationType-${params.locationType}`).click();
-  await page.getByTestId("common-next-button").click();
-
-  await expect(page.getByText("2단계 판정 질문")).toBeVisible();
+  return {
+    createJson,
+    determineJson,
+  };
 }
 
-async function expectResultCard(
-  page: Page,
-  params: {
-    heading: string;
-    status: "신청 가능" | "보완 필요" | "현재 제외" | "추가 확인 필요";
-    exactText?: string;
-  },
-) {
-  await expect(page.getByRole("heading", { name: params.heading })).toBeVisible();
-  await expect(page.getByText(params.status, { exact: true }).first()).toBeVisible();
-  if (params.exactText) {
-    await expect(page.getByText(params.exactText, { exact: true }).first()).toBeVisible();
-  }
+function getReport(determineJson: any, programId: string) {
+  return determineJson.reports.find((report: any) => report.programId === programId);
 }
 
 test.describe("eligibility smoke", () => {
-  test("production APIs respond with smoke-level health and catalog data", async ({ request, baseURL }) => {
+  test("production APIs and key pages respond", async ({ request, page, baseURL }) => {
     const healthResponse = await request.get(`${baseURL}/api/health`);
     expect(healthResponse.ok()).toBeTruthy();
 
@@ -59,148 +50,208 @@ test.describe("eligibility smoke", () => {
 
     const programsResponse = await request.get(`${baseURL}/api/programs`);
     expect(programsResponse.ok()).toBeTruthy();
-
     const programsPayload = await programsResponse.json();
-    expect(Array.isArray(programsPayload.programs)).toBe(true);
+    expect(programsPayload.source).toBe("supabase");
     expect(programsPayload.programs.length).toBeGreaterThan(0);
-    expect(programsPayload.programs[0].program.legacyId).toBeTruthy();
+
+    const configResponse = await request.get(`${baseURL}/api/eligibility/config`);
+    expect(configResponse.ok()).toBeTruthy();
+    const configPayload = await configResponse.json();
+    expect(configPayload.questions.length).toBeGreaterThan(20);
+    expect(configPayload.config.priorityProgramIds).toContain("work-life-balance");
+
+    await page.goto(`${baseURL}/check`);
+    await expect(page.getByRole("heading", { name: "고용장려금 자격 검토" })).toBeVisible();
+
+    await page.goto(`${baseURL}/admin/login`);
+    await expect(page.getByRole("heading", { name: "운영 콘솔 로그인" })).toBeVisible();
   });
 
-  test("regional employment journey reaches needs-followup result and consultation success", async ({ page }) => {
-    await page.route("https://api.emailjs.com/**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "text/plain",
-        body: "OK",
-      });
+  test("regional employment journey persists in Supabase and returns needs-followup", async ({ request, baseURL }) => {
+    const { createJson, determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "nonMetropolitan",
+        situations: ["regionalExpansion"],
+      },
+      followUpAnswers: {
+        "regional-employment.planReported": "needs_report",
+        "regional-employment.projectType": "qualified",
+        "regional-employment.localResident": "yes",
+        "regional-employment.maintainSixMonths": "yes",
+      },
     });
 
-    await runCommonFlow(page, {
-      companySize: "우선지원대상기업",
-      situation: "regionalExpansion",
-      workforceRange: "30to99",
-      locationType: "nonMetropolitan",
+    expect(createJson.storage).toBe("supabase");
+    expect(determineJson.storage).toBe("supabase");
+
+    const report = getReport(determineJson, "regional-employment");
+    expect(report.status).toBe("needs_followup");
+    expect(report.missingItems).toContain("지역고용계획 신고 선행");
+
+    const leadResponse = await request.post(`${baseURL}/api/consultation-leads`, {
+      data: {
+        name: "E2E 스모크",
+        phone: "01012341234",
+        company: "E2E 테스트 회사",
+        consultType: "지원금 신청 자격 검토",
+        message: `지역고용촉진지원금 스모크 테스트 ${Date.now()}`,
+        subsidyName: "판정 결과 기반 지원금",
+        sessionId: createJson.session.id,
+        interestedProgramIds: ["regional-employment"],
+        determinationStatuses: { "regional-employment": "needs_followup" },
+        missingItems: ["지역고용계획 신고 선행"],
+      },
     });
-
-    await page.getByTestId("eligibility-option-regional-employment.planReported-needs_report").click();
-    await page.getByTestId("eligibility-option-regional-employment.projectType-qualified").click();
-    await page.getByTestId("eligibility-option-regional-employment.localResident-yes").click();
-    await page.getByTestId("eligibility-option-regional-employment.maintainSixMonths-yes").click();
-
-    await page.getByTestId("followup-submit-button").click();
-
-    await expectResultCard(page, {
-      heading: "지역고용촉진지원금",
-      status: "보완 필요",
-      exactText: "지역고용계획 신고 선행",
-    });
-    await expect(page.getByText("현재 판정 요약: 지역고용촉진지원금 - 보완 필요")).toBeVisible();
-
-    const uniqueSuffix = Date.now().toString();
-    await page.getByTestId("consultation-name-input").fill("E2E 스모크");
-    await page.getByTestId("consultation-phone-input").fill("01012341234");
-    await page.getByTestId("consultation-company-input").fill("E2E 테스트 회사");
-    await page.getByTestId("consultation-message-input").fill(`지역고용촉진지원금 스모크 테스트 ${uniqueSuffix}`);
-    await page.getByTestId("consultation-agree-toggle").click();
-
-    const leadResponsePromise = page.waitForResponse(
-      (response) =>
-        response.url().includes("/api/consultation-leads") && response.request().method() === "POST",
-    );
-
-    await page.getByTestId("consultation-submit-button").click();
-
-    const leadResponse = await leadResponsePromise;
     expect(leadResponse.status()).toBe(201);
-    await expect(page.getByTestId("consultation-success-state")).toBeVisible();
-    await expect(page.getByText("상담 신청 완료")).toBeVisible();
+    const leadPayload = await leadResponse.json();
+    expect(leadPayload.storage).toBe("supabase");
   });
 
-  test("regular conversion out-of-range company shows ineligible result", async ({ page }) => {
-    await runCommonFlow(page, {
-      companySize: "우선지원대상기업",
-      situation: "regularConversion",
-      workforceRange: "over100",
-      locationType: "metropolitan",
+  test("regular conversion out-of-range company shows ineligible result", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "over100",
+        locationType: "metropolitan",
+        situations: ["regularConversion"],
+      },
+      followUpAnswers: {
+        "regular-conversion.tenureSixMonths": "yes",
+        "regular-conversion.formalConversion": "yes",
+        "regular-conversion.maintainOneMonth": "yes",
+        "regular-conversion.wageIncrease": "yes",
+      },
     });
 
-    await page.getByTestId("eligibility-option-regular-conversion.tenureSixMonths-yes").click();
-    await page.getByTestId("eligibility-option-regular-conversion.formalConversion-yes").click();
-    await page.getByTestId("eligibility-option-regular-conversion.maintainOneMonth-yes").click();
-    await page.getByTestId("eligibility-option-regular-conversion.wageIncrease-yes").click();
-
-    await page.getByTestId("followup-submit-button").click();
-
-    await expectResultCard(page, {
-      heading: "정규직 전환 지원금",
-      status: "현재 제외",
-      exactText: "5인 이상 30인 미만 기업 요건",
-    });
+    const report = getReport(determineJson, "regular-conversion");
+    expect(report.status).toBe("ineligible");
+    expect(report.missingItems).toContain("5인 이상 30인 미만 기업 요건");
   });
 
-  test("employment promotion journey reaches eligible result", async ({ page }) => {
-    await runCommonFlow(page, {
-      companySize: "우선지원대상기업",
-      situation: "newHire",
-      workforceRange: "30to99",
-      locationType: "metropolitan",
+  test("employment promotion journey reaches eligible result", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "metropolitan",
+        situations: ["newHire"],
+      },
+      followUpAnswers: {
+        "employment-promotion.jobSeekerRegistration": "yes",
+        "employment-promotion.regularEmployment": "yes",
+        "employment-promotion.maintainSixMonths": "yes",
+        "employment-promotion.wageLevel": "yes",
+      },
     });
 
-    await page.getByTestId("eligibility-option-employment-promotion.jobSeekerRegistration-yes").click();
-    await page.getByTestId("eligibility-option-employment-promotion.regularEmployment-yes").click();
-    await page.getByTestId("eligibility-option-employment-promotion.maintainSixMonths-yes").click();
-    await page.getByTestId("eligibility-option-employment-promotion.wageLevel-yes").click();
-
-    await page.getByTestId("followup-submit-button").click();
-
-    await expectResultCard(page, {
-      heading: "고용촉진장려금",
-      status: "신청 가능",
-      exactText: "채용 대상자 선행요건 증빙을 확보하세요.",
-    });
+    const report = getReport(determineJson, "employment-promotion");
+    expect(report.status).toBe("eligible");
   });
 
-  test("youth employment journey reaches needs-followup result", async ({ page }) => {
-    await runCommonFlow(page, {
-      companySize: "중견기업",
-      situation: "youthHire",
-      workforceRange: "30to99",
-      locationType: "nonMetropolitan",
+  test("youth employment journey reaches needs-followup result", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "중견기업",
+        workforceRange: "30to99",
+        locationType: "nonMetropolitan",
+        situations: ["youthHire"],
+      },
+      followUpAnswers: {
+        "youth-employment.targetYouth": "unknown",
+        "youth-employment.regularEmployment": "yes",
+        "youth-employment.hours": "yes",
+        "youth-employment.maintainSixMonths": "yes",
+      },
     });
 
-    await page.getByTestId("eligibility-option-youth-employment.targetYouth-unknown").click();
-    await page.getByTestId("eligibility-option-youth-employment.regularEmployment-yes").click();
-    await page.getByTestId("eligibility-option-youth-employment.hours-yes").click();
-    await page.getByTestId("eligibility-option-youth-employment.maintainSixMonths-yes").click();
-
-    await page.getByTestId("followup-submit-button").click();
-
-    await expectResultCard(page, {
-      heading: "청년일자리도약장려금",
-      status: "보완 필요",
-      exactText: "취업애로청년 해당 여부 확인",
-    });
+    const report = getReport(determineJson, "youth-employment");
+    expect(report.status).toBe("needs_followup");
+    expect(report.missingItems).toContain("취업애로청년 해당 여부 확인");
   });
 
-  test("continued employment journey reaches needs-followup result", async ({ page }) => {
-    await runCommonFlow(page, {
-      companySize: "우선지원대상기업",
-      situation: "elderlyHire",
-      workforceRange: "30to99",
-      locationType: "nonMetropolitan",
+  test("continued employment journey reaches needs-followup result", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "nonMetropolitan",
+        situations: ["elderlyHire"],
+      },
+      followUpAnswers: {
+        "continued-employment.retirementPolicy": "yes",
+        "continued-employment.formalPolicy": "needs_update",
+        "continued-employment.ratioCheck": "unknown",
+        "continued-employment.targetWorker": "planned",
+      },
     });
 
-    await page.getByTestId("eligibility-option-continued-employment.retirementPolicy-yes").click();
-    await page.getByTestId("eligibility-option-continued-employment.formalPolicy-needs_update").click();
-    await page.getByTestId("eligibility-option-continued-employment.ratioCheck-unknown").click();
-    await page.getByTestId("eligibility-option-continued-employment.targetWorker-planned").click();
+    const report = getReport(determineJson, "continued-employment");
+    expect(report.status).toBe("needs_followup");
+    expect(report.missingItems).toContain("취업규칙 또는 단체협약 개정");
+  });
 
-    await page.getByTestId("followup-submit-button").click();
-
-    await expectResultCard(page, {
-      heading: "고령자 계속고용장려금",
-      status: "보완 필요",
-      exactText: "취업규칙 또는 단체협약 개정",
+  test("work-life bundle reaches DB-backed needs-followup results", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "metropolitan",
+        situations: ["workLifeBalance"],
+      },
+      followUpAnswers: {
+        "work-life-balance.shortenHours": "yes",
+        "work-life-balance.tracking": "unknown",
+        "work-life-45.laborAgreement": "planned",
+        "work-life-45.foundationApproval": "unknown",
+        "flexible-work.policy": "planned",
+        "flexible-work.tracking": "unknown",
+      },
     });
+
+    expect(getReport(determineJson, "work-life-balance").status).toBe("needs_followup");
+    expect(getReport(determineJson, "flexible-work").status).toBe("needs_followup");
+    expect(getReport(determineJson, "work-life-45").status).toBe("needs_followup");
+  });
+
+  test("parental leave bundle reaches DB-backed needs-followup results", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "metropolitan",
+        situations: ["parentalLeave"],
+      },
+      followUpAnswers: {
+        "parental-leave-full.leaveGranted": "planned",
+        "parental-leave-replacement.replacementHire": "planned",
+        "work-sharing.allowance": "planned",
+        "parental-leave-childcare.shortHours": "planned",
+      },
+    });
+
+    expect(getReport(determineJson, "parental-leave-full").status).toBe("needs_followup");
+    expect(getReport(determineJson, "parental-leave-replacement").status).toBe("needs_followup");
+    expect(getReport(determineJson, "work-sharing").status).toBe("needs_followup");
+    expect(getReport(determineJson, "parental-leave-childcare").status).toBe("needs_followup");
+  });
+
+  test("employment maintenance bundle reaches DB-backed needs-followup result", async ({ request, baseURL }) => {
+    const { determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "metropolitan",
+        situations: ["employmentMaintenance"],
+      },
+      followUpAnswers: {
+        "employment-maintenance.crisis": "unknown",
+      },
+    });
+
+    const report = getReport(determineJson, "employment-maintenance");
+    expect(report.status).toBe("needs_followup");
+    expect(report.missingItems).toContain("경영상 사유 증빙");
   });
 });
