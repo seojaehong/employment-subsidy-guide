@@ -26,7 +26,7 @@ const seedDb = require("../../../server/data/seed-db.json") as {
 function readBody(req: any) {
   return new Promise<any>((resolve, reject) => {
     if (req.body && typeof req.body === "object") {
-      resolve(req.body as BaseEligibilityAnswers);
+      resolve(req.body);
       return;
     }
 

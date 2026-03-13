@@ -1,7 +1,7 @@
 function readBody(req: any) {
   return new Promise<any>((resolve, reject) => {
     if (req.body && typeof req.body === "object") {
-      resolve(req.body as FollowUpAnswers);
+      resolve(req.body);
       return;
     }
 
