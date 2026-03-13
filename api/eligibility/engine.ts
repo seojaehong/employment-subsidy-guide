@@ -274,7 +274,7 @@ export function determinePrograms(programIds: string[], baseAnswers: BaseEligibi
       default:
         return {
           programId,
-          status: "manual_review",
+          status: "manual_review" as const,
           summary: "이 프로그램은 수동 검토가 필요합니다.",
           rationale: ["1차 판정 엔진 대상 제도가 아니어서 상담 검토가 필요합니다."],
           missingItems: [],
