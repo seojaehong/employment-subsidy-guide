@@ -71,6 +71,19 @@ interface OverrideRow {
   effective_from: string;
 }
 
+async function fetchOptionalRows<T>(path: string) {
+  const response = await fetch(`${SUPABASE_URL}${path}`, { headers: getHeaders() });
+  if (!response.ok) {
+    const text = await response.text();
+    if (text.includes("PGRST205")) {
+      return [] as T[];
+    }
+    throw new Error(text);
+  }
+
+  return (await response.json()) as T[];
+}
+
 function isSupabaseConfigured() {
   return SUPABASE_URL !== "" && SUPABASE_SERVICE_ROLE_KEY !== "";
 }
@@ -216,15 +229,14 @@ export async function fetchOperationalPrograms() {
   }
 
   try {
-    const [programsResponse, rulesResponse, exclusionsResponse, sourcesResponse, overridesResponse] = await Promise.all([
+    const [programsResponse, rulesResponse, exclusionsResponse, sourcesResponse] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/subsidy_programs?select=*&published=eq.true&order=category.asc,name.asc`, { headers: getHeaders() }),
       fetch(`${SUPABASE_URL}/rest/v1/subsidy_rules?select=*`, { headers: getHeaders() }),
       fetch(`${SUPABASE_URL}/rest/v1/subsidy_exclusions?select=*`, { headers: getHeaders() }),
       fetch(`${SUPABASE_URL}/rest/v1/subsidy_source_documents?select=*`, { headers: getHeaders() }),
-      fetch(`${SUPABASE_URL}/rest/v1/subsidy_overrides?select=*`, { headers: getHeaders() }),
     ]);
 
-    const responses = [programsResponse, rulesResponse, exclusionsResponse, sourcesResponse, overridesResponse];
+    const responses = [programsResponse, rulesResponse, exclusionsResponse, sourcesResponse];
     for (const response of responses) {
       if (!response.ok) {
         throw new Error(await response.text());
@@ -236,7 +248,7 @@ export async function fetchOperationalPrograms() {
       rulesResponse.json() as Promise<RuleRow[]>,
       exclusionsResponse.json() as Promise<ExclusionRow[]>,
       sourcesResponse.json() as Promise<SourceRow[]>,
-      overridesResponse.json() as Promise<OverrideRow[]>,
+      fetchOptionalRows<OverrideRow>("/rest/v1/subsidy_overrides?select=*"),
     ]);
 
     const mappedPrograms = programRows.map(mapProgramRow);
