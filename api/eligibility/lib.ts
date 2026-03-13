@@ -1,14 +1,13 @@
+import { determinePrograms, recommendProgramIds } from "./engine.ts";
 import {
-  determinePrograms,
   getEligibilityConfig,
   getProgramFollowUpQuestions,
-  recommendProgramIds,
   type BaseEligibilityAnswers,
   type DeterminationResult,
   type EligibilityQuestionRecord,
   type FollowUpAnswers,
   type RecommendationRecord,
-} from "../../shared/subsidy.ts";
+} from "./types.ts";
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
