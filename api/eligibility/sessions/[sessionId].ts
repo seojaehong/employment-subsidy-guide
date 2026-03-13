@@ -1,3 +1,5 @@
+import { getEligibilitySessionRecord } from "../lib.ts";
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {
     res.status(405).json({ message: "Method not allowed" });
@@ -11,9 +13,6 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const [{ getEligibilitySessionRecord }] = await Promise.all([
-      import("../../../server/eligibility-persistence.ts"),
-    ]);
     const payload = await getEligibilitySessionRecord(sessionId);
     if (!payload) {
       res.status(404).json({ message: "Session not found" });

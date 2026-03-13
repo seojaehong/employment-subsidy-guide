@@ -43,7 +43,6 @@ interface SessionCreateResponse {
     baseAnswers: BaseEligibilityAnswers;
     recommendations: RecommendationRecord[];
   };
-  recommendedPrograms: { program: OperationalProgram | null }[];
   followUpQuestions: EligibilityQuestionRecord[];
 }
 
@@ -178,17 +177,14 @@ export default function EligibilityCheck() {
             baseAnswers: normalisedBaseAnswers,
             recommendations,
           },
-          recommendedPrograms: recommendations.map((recommendation) => ({
-            program: programLookup.get(recommendation.programId) ?? null,
-          })),
           followUpQuestions: getProgramFollowUpQuestions().filter((question) =>
             recommendations.some((recommendation) => recommendation.programId === question.programId),
           ),
         };
       }
       setSessionId(payload.session.id);
-      const resolvedPrograms = payload.recommendedPrograms
-        .map((entry) => entry.program)
+      const resolvedPrograms = payload.session.recommendations
+        .map((recommendation) => programLookup.get(recommendation.programId) ?? null)
         .filter(Boolean) as OperationalProgram[];
       setRecommendedPrograms(resolvedPrograms);
       setFollowUpQuestions(payload.followUpQuestions);
