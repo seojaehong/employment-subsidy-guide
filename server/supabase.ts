@@ -10,6 +10,21 @@ interface SupabaseInsertEnvelope<T> {
   error?: SupabaseInsertError;
 }
 
+export interface ConsultationLeadRow {
+  id: string;
+  created_at: string;
+  name: string;
+  phone: string;
+  company: string | null;
+  consult_type: string;
+  message: string | null;
+  subsidy_name: string | null;
+  session_id: string | null;
+  interested_program_ids: string[];
+  determination_statuses: Record<string, string>;
+  missing_items: string[];
+}
+
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
@@ -26,7 +41,7 @@ export function isSupabaseConfigured() {
   return SUPABASE_URL !== "" && SUPABASE_SERVICE_ROLE_KEY !== "";
 }
 
-export async function insertConsultationLead<TRecord extends Record<string, unknown>>(payload: TRecord) {
+export async function insertConsultationLead(payload: Omit<ConsultationLeadRow, "id" | "created_at">) {
   if (!isSupabaseConfigured()) {
     return null;
   }
@@ -38,7 +53,9 @@ export async function insertConsultationLead<TRecord extends Record<string, unkn
   });
 
   const text = await response.text();
-  const parsed = text ? (JSON.parse(text) as TRecord[] | SupabaseInsertEnvelope<TRecord> | SupabaseInsertError) : null;
+  const parsed = text
+    ? (JSON.parse(text) as ConsultationLeadRow[] | SupabaseInsertEnvelope<ConsultationLeadRow> | SupabaseInsertError)
+    : null;
 
   const rows = Array.isArray(parsed)
     ? parsed
