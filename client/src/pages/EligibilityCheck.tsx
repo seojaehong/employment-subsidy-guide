@@ -22,7 +22,7 @@ import type {
 } from "@shared/subsidy";
 import {
   determinePrograms,
-  getEligibilityConfig,
+  getCommonEligibilityQuestions,
   getProgramFollowUpQuestions,
   recommendProgramIds,
 } from "@shared/subsidy";
@@ -33,6 +33,7 @@ import { categoryColors } from "@/lib/subsidyData";
 import {
   createEligibilitySession as createEligibilitySessionRequest,
   determineEligibilitySession as determineEligibilitySessionRequest,
+  fetchEligibilityConfig,
 } from "@/lib/api";
 
 type FlowStep = "common" | "followup" | "result";
@@ -91,8 +92,16 @@ export default function EligibilityCheck() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const config = getEligibilityConfig();
-    setCommonQuestions(config.commonQuestions);
+    const loadConfig = async () => {
+      try {
+        const config = await fetchEligibilityConfig() as { config: { commonQuestions: EligibilityQuestionRecord[] } };
+        setCommonQuestions(config.config.commonQuestions);
+      } catch {
+        setCommonQuestions(getCommonEligibilityQuestions());
+      }
+    };
+
+    void loadConfig();
   }, []);
 
   const currentQuestion = commonQuestions[commonStepIndex];

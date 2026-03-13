@@ -177,6 +177,104 @@ export interface OperationalProgram {
   latestSource: SourceDocumentRecord;
 }
 
+export type DraftStatus = "draft" | "in_review" | "published";
+export type PublishStatus = "draft" | "review" | "published";
+export type AdminRole = "editor" | "publisher";
+export type RuleOperator = "equals" | "not_equals" | "includes" | "not_includes";
+export type RuleType = "recommendation" | "determination";
+
+export interface RuleDefinition {
+  id: string;
+  documentVersionId?: string | null;
+  targetProgramId: string;
+  ruleType: RuleType;
+  inputKey: string;
+  operator: RuleOperator;
+  expectedValue: string;
+  effectStatus?: DeterminationStatus;
+  effectSummary?: string;
+  effectMissingItem?: string;
+  effectRationale?: string;
+  effectNextAction?: string;
+  effectReason?: string;
+  effectMatchScore?: number;
+  priority: number;
+  published: boolean;
+  draftStatus: DraftStatus;
+}
+
+export interface QuestionSetVersion {
+  id: string;
+  documentVersionId?: string | null;
+  questionId: string;
+  scope: "common" | "program";
+  programId?: string;
+  prompt: string;
+  helper?: string;
+  type: "single" | "multi";
+  options: EligibilityQuestionOption[];
+  published: boolean;
+  draftStatus: DraftStatus;
+}
+
+export interface DocumentVersionRecord {
+  id: string;
+  slug: string;
+  title: string;
+  issuer: string;
+  baseDate: string;
+  fileName: string;
+  status: PublishStatus;
+  sourceDocumentId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProgramDraftRecord {
+  id: string;
+  documentVersionId: string;
+  legacyId: string;
+  name: string;
+  subName?: string;
+  category: SubsidyCategory;
+  summary: string;
+  amountLabel: string;
+  duration: string;
+  applicationCycle: string;
+  tags: string[];
+  highlight?: boolean;
+  baseAmount: SubsidyAmount;
+  requirements: string[];
+  exclusions: string[];
+  notes: string[];
+  followUpQuestionIds: string[];
+  latestSourceDocumentId: string;
+  sourceDocumentIds: string[];
+  draftStatus: DraftStatus;
+}
+
+export interface OverrideRecord {
+  id: string;
+  documentVersionId?: string | null;
+  targetType: string;
+  targetId: string;
+  fieldName: string;
+  value: string;
+  reason: string;
+  authorEmail: string;
+  effectiveFrom: string;
+  createdAt: string;
+}
+
+export interface AdminSession {
+  accessToken: string;
+  refreshToken?: string;
+  userId: string;
+  email: string;
+  role?: AdminRole;
+  bootstrapNeeded?: boolean;
+}
+
 const RECOMMENDATION_TARGETS = new Set([
   "employment-promotion",
   "youth-employment",

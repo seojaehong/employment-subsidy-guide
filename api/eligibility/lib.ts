@@ -1,16 +1,15 @@
-import { determinePrograms, recommendProgramIds } from "./engine.js";
+import { ensureDefaultPublishedEligibilityArtifacts } from "../admin-lib.js";
+import { supabaseDelete, supabaseInsert, supabasePatch, supabaseSelect } from "../supabase-rest.js";
+import { determinePrograms as determineProgramsFallback, recommendProgramIds as recommendProgramIdsFallback } from "./engine.js";
 import {
-  getEligibilityConfig,
-  getProgramFollowUpQuestions,
+  getEligibilityConfig as getLocalEligibilityConfig,
+  getProgramFollowUpQuestions as getLocalProgramFollowUpQuestions,
   type BaseEligibilityAnswers,
   type DeterminationResult,
   type EligibilityQuestionRecord,
   type FollowUpAnswers,
   type RecommendationRecord,
 } from "./types.js";
-
-const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 declare global {
   var __employmentEligibilitySessions: Map<string, StoredSession> | undefined;
@@ -49,17 +48,38 @@ interface DeterminationRow {
   can_generate_draft: boolean;
 }
 
-function isSupabaseConfigured() {
-  return SUPABASE_URL !== "" && SUPABASE_SERVICE_ROLE_KEY !== "";
+interface QuestionRow {
+  id: string;
+  document_version_id: string | null;
+  question_id: string;
+  scope: "common" | "program";
+  program_id: string | null;
+  prompt: string;
+  helper: string | null;
+  type: "single" | "multi";
+  options: Array<{ value: string; label: string; description?: string }>;
+  published: boolean;
+  draft_status: "draft" | "in_review" | "published";
 }
 
-function getHeaders() {
-  return {
-    "Content-Type": "application/json",
-    apikey: SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-    Prefer: "return=representation",
-  };
+interface RuleRow {
+  id: string;
+  document_version_id: string | null;
+  target_program_id: string;
+  rule_type: "recommendation" | "determination";
+  input_key: string;
+  operator: "equals" | "not_equals" | "includes" | "not_includes";
+  expected_value: string;
+  effect_status: DeterminationResult["status"] | null;
+  effect_summary: string | null;
+  effect_missing_item: string | null;
+  effect_rationale: string | null;
+  effect_next_action: string | null;
+  effect_reason: string | null;
+  effect_match_score: number | null;
+  priority: number;
+  published: boolean;
+  draft_status: "draft" | "in_review" | "published";
 }
 
 function getRuntimeStore() {
@@ -67,11 +87,6 @@ function getRuntimeStore() {
     globalThis.__employmentEligibilitySessions = new Map<string, StoredSession>();
   }
   return globalThis.__employmentEligibilitySessions;
-}
-
-function buildFollowUpQuestions(recommendations: RecommendationRecord[]) {
-  const programIds = new Set(recommendations.map((recommendation) => recommendation.programId));
-  return getProgramFollowUpQuestions().filter((question) => question.programId && programIds.has(question.programId));
 }
 
 function mapSessionRow(row: SessionRow): StoredSession {
@@ -102,46 +117,234 @@ function mapDeterminationRow(row: DeterminationRow): DeterminationResult {
   };
 }
 
-export function getEligibilityQuestions(): EligibilityQuestionRecord[] {
-  return getEligibilityConfig().commonQuestions.concat(getProgramFollowUpQuestions());
+function mapQuestionRow(row: QuestionRow): EligibilityQuestionRecord {
+  return {
+    id: row.question_id,
+    scope: row.scope,
+    programId: row.program_id ?? undefined,
+    prompt: row.prompt,
+    helper: row.helper ?? undefined,
+    type: row.type,
+    options: row.options ?? [],
+  };
 }
 
-export function getEligibilityRuntimeConfig() {
+function isSupabaseConfigured() {
+  return process.env.SUPABASE_URL !== "" && process.env.SUPABASE_SERVICE_ROLE_KEY !== "";
+}
+
+function getProgramFollowUpQuestionsFromList(
+  questions: EligibilityQuestionRecord[],
+  recommendations: RecommendationRecord[],
+) {
+  const programIds = new Set(recommendations.map((recommendation) => recommendation.programId));
+  return questions.filter((question) => question.scope === "program" && question.programId && programIds.has(question.programId));
+}
+
+function getInputValue(baseAnswers: BaseEligibilityAnswers, followUpAnswers: FollowUpAnswers, key: string) {
+  if (key === "companySize") return baseAnswers.companySize;
+  if (key === "workforceRange") return baseAnswers.workforceRange;
+  if (key === "locationType") return baseAnswers.locationType;
+  if (key === "situations") return baseAnswers.situations;
+  return followUpAnswers[key];
+}
+
+function matchesRule(value: string | string[] | undefined, operator: RuleRow["operator"], expectedValue: string) {
+  if (Array.isArray(value)) {
+    if (operator === "includes") return value.includes(expectedValue);
+    if (operator === "not_includes") return !value.includes(expectedValue);
+    return false;
+  }
+
+  if (operator === "equals") return String(value ?? "") === expectedValue;
+  if (operator === "not_equals") return String(value ?? "") !== expectedValue;
+  if (operator === "includes") return false;
+  if (operator === "not_includes") return true;
+  return false;
+}
+
+function getStatusWeight(status: DeterminationResult["status"]) {
+  switch (status) {
+    case "ineligible":
+      return 4;
+    case "manual_review":
+      return 3;
+    case "needs_followup":
+      return 2;
+    case "eligible":
+    default:
+      return 1;
+  }
+}
+
+async function getPublishedQuestions() {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  await ensureDefaultPublishedEligibilityArtifacts();
+  const rows = await supabaseSelect<QuestionRow[]>(
+    "subsidy_question_sets",
+    "?select=*&published=eq.true&order=scope.asc,question_id.asc",
+  );
+  return rows.map(mapQuestionRow);
+}
+
+async function getPublishedRules() {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  await ensureDefaultPublishedEligibilityArtifacts();
+  return supabaseSelect<RuleRow[]>(
+    "eligibility_rule_definitions",
+    "?select=*&published=eq.true&order=priority.asc",
+  );
+}
+
+async function getEligibilityArtifacts() {
+  try {
+    const [questions, rules] = await Promise.all([getPublishedQuestions(), getPublishedRules()]);
+    if (questions && questions.length > 0 && rules && rules.length > 0) {
+      return { questions, rules, source: "supabase" as const };
+    }
+  } catch {
+    // fall back below
+  }
+
+  const localQuestions = getLocalEligibilityConfig().commonQuestions.concat(getLocalProgramFollowUpQuestions());
+  return { questions: localQuestions, rules: [] as RuleRow[], source: "fallback" as const };
+}
+
+async function recommendProgramIds(baseAnswers: BaseEligibilityAnswers) {
+  const artifacts = await getEligibilityArtifacts();
+  const recommendationRules = artifacts.rules.filter((rule) => rule.rule_type === "recommendation");
+  if (recommendationRules.length === 0) {
+    return {
+      recommendations: recommendProgramIdsFallback(baseAnswers),
+      questions: artifacts.questions,
+      source: "fallback" as const,
+    };
+  }
+
+  const recommendations = recommendationRules
+    .filter((rule) => matchesRule(getInputValue(baseAnswers, {}, rule.input_key), rule.operator, rule.expected_value))
+    .map((rule) => ({
+      programId: rule.target_program_id,
+      reason: rule.effect_reason ?? "DB 규칙 추천 결과입니다.",
+      matchScore: rule.effect_match_score ?? Math.max(50, 100 - rule.priority),
+      priority: rule.priority,
+    }))
+    .sort((a, b) => a.priority - b.priority || b.matchScore - a.matchScore);
+
+  const deduped = Array.from(
+    new Map(recommendations.map((recommendation) => [recommendation.programId, recommendation])).values(),
+  ).map(({ priority: _priority, ...recommendation }) => recommendation);
+
   return {
-    config: getEligibilityConfig(),
-    questions: getEligibilityQuestions(),
+    recommendations: deduped.length > 0 ? deduped : recommendProgramIdsFallback(baseAnswers),
+    questions: artifacts.questions,
+    source: deduped.length > 0 ? "supabase" as const : "fallback" as const,
+  };
+}
+
+async function determineProgramsWithRules(
+  programIds: string[],
+  baseAnswers: BaseEligibilityAnswers,
+  followUpAnswers: FollowUpAnswers,
+) {
+  const artifacts = await getEligibilityArtifacts();
+  const determinationRules = artifacts.rules.filter((rule) => rule.rule_type === "determination");
+
+  const results = programIds.map((programId) => {
+    const programRules = determinationRules.filter((rule) => rule.target_program_id === programId);
+    if (programRules.length === 0) {
+      return determineProgramsFallback([programId], baseAnswers, followUpAnswers)[0];
+    }
+
+    const matched = programRules
+      .filter((rule) =>
+        matchesRule(getInputValue(baseAnswers, followUpAnswers, rule.input_key), rule.operator, rule.expected_value),
+      )
+      .sort((a, b) => a.priority - b.priority);
+
+    let status: DeterminationResult["status"] = "eligible";
+    let summary = "핵심 요건 기준으로 신청 가능성이 있습니다.";
+    const rationale: string[] = [];
+    const missingItems: string[] = [];
+    const nextActions: string[] = [];
+
+    for (const rule of matched) {
+      if (rule.effect_status && getStatusWeight(rule.effect_status) >= getStatusWeight(status)) {
+        status = rule.effect_status;
+      }
+      if (rule.effect_summary && getStatusWeight(rule.effect_status ?? status) >= getStatusWeight(status)) {
+        summary = rule.effect_summary;
+      }
+      if (rule.effect_rationale) rationale.push(rule.effect_rationale);
+      if (rule.effect_missing_item) missingItems.push(rule.effect_missing_item);
+      if (rule.effect_next_action) nextActions.push(rule.effect_next_action);
+    }
+
+    if (matched.length === 0) {
+      return determineProgramsFallback([programId], baseAnswers, followUpAnswers)[0];
+    }
+
+    return {
+      programId,
+      status,
+      summary,
+      rationale: Array.from(new Set(rationale.length > 0 ? rationale : ["DB 규칙 기반 판정 결과입니다."])),
+      missingItems: Array.from(new Set(missingItems)),
+      nextActions: Array.from(new Set(nextActions.length > 0 ? nextActions : ["전문가 상담으로 세부 요건을 점검하세요."])),
+      canGenerateDraft: status === "eligible" || status === "needs_followup",
+    } satisfies DeterminationResult;
+  });
+
+  return {
+    reports: results,
+    questions: artifacts.questions,
+  };
+}
+
+export async function getEligibilityQuestions(): Promise<EligibilityQuestionRecord[]> {
+  const artifacts = await getEligibilityArtifacts();
+  return artifacts.questions;
+}
+
+export async function getEligibilityRuntimeConfig() {
+  const questions = await getEligibilityQuestions();
+  return {
+    config: {
+      commonQuestions: questions.filter((question) => question.scope === "common"),
+      priorityProgramIds: Array.from(new Set(questions.flatMap((question) => (question.programId ? [question.programId] : [])))),
+    },
+    questions,
   };
 }
 
 export async function createEligibilitySessionRecord(baseAnswers: BaseEligibilityAnswers) {
-  const recommendations = recommendProgramIds(baseAnswers);
-  const followUpQuestions = buildFollowUpQuestions(recommendations);
+  const recommendationPayload = await recommendProgramIds(baseAnswers);
+  const followUpQuestions = getProgramFollowUpQuestionsFromList(
+    recommendationPayload.questions,
+    recommendationPayload.recommendations,
+  );
 
   if (isSupabaseConfigured()) {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/eligibility_sessions`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify({
-        company_size: baseAnswers.companySize,
-        workforce_range: baseAnswers.workforceRange,
-        location_type: baseAnswers.locationType,
-        situations: baseAnswers.situations,
-        recommendations,
-        follow_up_answers: {},
-      }),
+    const rows = await supabaseInsert<SessionRow[]>("eligibility_sessions", {
+      company_size: baseAnswers.companySize,
+      workforce_range: baseAnswers.workforceRange,
+      location_type: baseAnswers.locationType,
+      situations: baseAnswers.situations,
+      recommendations: recommendationPayload.recommendations,
+      follow_up_answers: {},
     });
 
-    const text = await response.text();
-    if (!response.ok) {
-      throw new Error(text || `Eligibility session insert failed with status ${response.status}`);
-    }
-
-    const rows = text ? (JSON.parse(text) as SessionRow[]) : [];
-    const session = mapSessionRow(rows[0]);
     return {
-      session,
+      session: mapSessionRow(rows[0]),
       followUpQuestions,
       storage: "supabase" as const,
+      source: recommendationPayload.source,
     };
   }
 
@@ -149,7 +352,7 @@ export async function createEligibilitySessionRecord(baseAnswers: BaseEligibilit
     id: `session_${Date.now()}`,
     createdAt: new Date().toISOString(),
     baseAnswers,
-    recommendations,
+    recommendations: recommendationPayload.recommendations,
     followUpAnswers: {},
     determinations: [],
   };
@@ -158,152 +361,94 @@ export async function createEligibilitySessionRecord(baseAnswers: BaseEligibilit
     session,
     followUpQuestions,
     storage: "memory" as const,
+    source: recommendationPayload.source,
   };
 }
 
 export async function determineEligibilitySessionRecord(sessionId: string, followUpAnswers: FollowUpAnswers) {
   if (isSupabaseConfigured()) {
-    const sessionResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/eligibility_sessions?id=eq.${encodeURIComponent(sessionId)}&select=*`,
-      { headers: getHeaders() },
+    const sessionRows = await supabaseSelect<SessionRow[]>(
+      "eligibility_sessions",
+      `?select=*&id=eq.${encodeURIComponent(sessionId)}`,
     );
-    const sessionText = await sessionResponse.text();
-    if (!sessionResponse.ok) {
-      throw new Error(sessionText || `Eligibility session fetch failed with status ${sessionResponse.status}`);
-    }
-
-    const sessionRows = sessionText ? (JSON.parse(sessionText) as SessionRow[]) : [];
     const row = sessionRows[0];
     if (!row) return null;
 
     const session = mapSessionRow(row);
-    const determinations = determinePrograms(
+    const evaluated = await determineProgramsWithRules(
       session.recommendations.map((recommendation) => recommendation.programId),
       session.baseAnswers,
       followUpAnswers,
     );
 
-    const patchResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/eligibility_sessions?id=eq.${encodeURIComponent(sessionId)}`,
-      {
-        method: "PATCH",
-        headers: { ...getHeaders(), Prefer: "return=minimal" },
-        body: JSON.stringify({ follow_up_answers: followUpAnswers }),
-      },
+    await supabasePatch(
+      "eligibility_sessions",
+      `?id=eq.${encodeURIComponent(sessionId)}`,
+      { follow_up_answers: followUpAnswers },
+      "return=minimal",
     );
-    if (!patchResponse.ok) {
-      throw new Error(await patchResponse.text());
-    }
-
-    const deleteResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/eligibility_determinations?session_id=eq.${encodeURIComponent(sessionId)}`,
-      {
-        method: "DELETE",
-        headers: { ...getHeaders(), Prefer: "return=minimal" },
-      },
+    await supabaseDelete("eligibility_determinations", `?session_id=eq.${encodeURIComponent(sessionId)}`);
+    await supabaseInsert(
+      "eligibility_determinations",
+      evaluated.reports.map((determination) => ({
+        session_id: sessionId,
+        program_id: determination.programId,
+        status: determination.status,
+        summary: determination.summary,
+        rationale: determination.rationale,
+        missing_items: determination.missingItems,
+        next_actions: determination.nextActions,
+        can_generate_draft: determination.canGenerateDraft,
+      })),
     );
-    if (!deleteResponse.ok) {
-      throw new Error(await deleteResponse.text());
-    }
-
-    const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/eligibility_determinations`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(
-        determinations.map((determination) => ({
-          session_id: sessionId,
-          program_id: determination.programId,
-          status: determination.status,
-          summary: determination.summary,
-          rationale: determination.rationale,
-          missing_items: determination.missingItems,
-          next_actions: determination.nextActions,
-          can_generate_draft: determination.canGenerateDraft,
-        })),
-      ),
-    });
-    const insertText = await insertResponse.text();
-    if (!insertResponse.ok) {
-      throw new Error(insertText || `Eligibility determination insert failed with status ${insertResponse.status}`);
-    }
-
-    const determinationRows = insertText ? (JSON.parse(insertText) as DeterminationRow[]) : [];
 
     return {
       session: {
         ...session,
         followUpAnswers,
-        determinations,
+        determinations: evaluated.reports,
       },
-      reports: determinationRows.map(mapDeterminationRow),
+      reports: evaluated.reports,
       storage: "supabase" as const,
     };
   }
 
   const session = getRuntimeStore().get(sessionId);
   if (!session) return null;
-
-  const determinations = determinePrograms(
+  const evaluated = await determineProgramsWithRules(
     session.recommendations.map((recommendation) => recommendation.programId),
     session.baseAnswers,
     followUpAnswers,
   );
-
-  const updated: StoredSession = {
-    ...session,
-    followUpAnswers,
-    determinations,
-  };
+  const updated = { ...session, followUpAnswers, determinations: evaluated.reports };
   getRuntimeStore().set(sessionId, updated);
-
   return {
     session: updated,
-    reports: determinations,
+    reports: evaluated.reports,
     storage: "memory" as const,
   };
 }
 
 export async function getEligibilitySessionRecord(sessionId: string) {
   if (isSupabaseConfigured()) {
-    const sessionResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/eligibility_sessions?id=eq.${encodeURIComponent(sessionId)}&select=*`,
-      { headers: getHeaders() },
-    );
-    const sessionText = await sessionResponse.text();
-    if (!sessionResponse.ok) {
-      throw new Error(sessionText || `Eligibility session fetch failed with status ${sessionResponse.status}`);
-    }
-
-    const sessionRows = sessionText ? (JSON.parse(sessionText) as SessionRow[]) : [];
+    const [sessionRows, reportRows] = await Promise.all([
+      supabaseSelect<SessionRow[]>("eligibility_sessions", `?select=*&id=eq.${encodeURIComponent(sessionId)}`),
+      supabaseSelect<DeterminationRow[]>(
+        "eligibility_determinations",
+        `?select=*&session_id=eq.${encodeURIComponent(sessionId)}`,
+      ),
+    ]);
     const row = sessionRows[0];
     if (!row) return null;
-
-    const reportsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/eligibility_determinations?session_id=eq.${encodeURIComponent(sessionId)}&select=*`,
-      { headers: getHeaders() },
-    );
-    const reportsText = await reportsResponse.text();
-    if (!reportsResponse.ok) {
-      throw new Error(reportsText || `Eligibility determinations fetch failed with status ${reportsResponse.status}`);
-    }
-
-    const reportRows = reportsText ? (JSON.parse(reportsText) as DeterminationRow[]) : [];
+    const reports = reportRows.map(mapDeterminationRow);
     return {
-      session: {
-        ...mapSessionRow(row),
-        determinations: reportRows.map(mapDeterminationRow),
-      },
-      reports: reportRows.map(mapDeterminationRow),
+      session: { ...mapSessionRow(row), determinations: reports },
+      reports,
       storage: "supabase" as const,
     };
   }
 
   const session = getRuntimeStore().get(sessionId);
   if (!session) return null;
-
-  return {
-    session,
-    reports: session.determinations,
-    storage: "memory" as const,
-  };
+  return { session, reports: session.determinations, storage: "memory" as const };
 }

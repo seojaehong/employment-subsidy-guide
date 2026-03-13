@@ -9,6 +9,9 @@ import SubsidyList from "./pages/SubsidyList";
 import SubsidyDetail from "./pages/SubsidyDetail";
 import SubsidyCompare from "./pages/SubsidyCompare";
 import EligibilityCheck from "./pages/EligibilityCheck";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminDocumentDetail from "./pages/AdminDocumentDetail";
 
 function Router() {
   return (
@@ -18,6 +21,9 @@ function Router() {
       <Route path="/subsidies/:id" component={SubsidyDetail} />
       <Route path="/compare" component={SubsidyCompare} />
       <Route path="/check" component={EligibilityCheck} />
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/documents/:id" component={AdminDocumentDetail} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
