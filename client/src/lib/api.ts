@@ -68,21 +68,21 @@ export function createConsultationLead(
 }
 
 export function loginAdmin(email: string, password: string) {
-  return request<{ session: AdminSession }>("/api/admin/auth/login", {
+  return request<{ session: AdminSession }>("/api/admin?action=login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
 }
 
 export function bootstrapAdmin(email: string, password: string) {
-  return request<{ session: AdminSession }>("/api/admin/auth/bootstrap", {
+  return request<{ session: AdminSession }>("/api/admin?action=bootstrap", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
 }
 
 export function fetchAdminSession(token: string) {
-  return request<{ session: AdminSession }>("/api/admin/auth/session", {
+  return request<{ session: AdminSession }>("/api/admin?action=session", {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
@@ -92,7 +92,7 @@ export function fetchAdminDocuments(token: string) {
     documents: DocumentVersionRecord[];
     overrides: OverrideRecord[];
     publishEvents: Array<{ id: string; document_version_id: string; author_email: string; summary?: string; created_at: string }>;
-  }>("/api/admin/documents", {
+  }>("/api/admin?action=documents", {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
@@ -101,7 +101,7 @@ export function createAdminDocument(
   token: string,
   payload: { title: string; issuer: string; baseDate: string; fileName: string; sourceDocumentId?: string },
 ) {
-  return request("/api/admin/documents", {
+  return request("/api/admin?action=documents", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
@@ -116,7 +116,7 @@ export function fetchAdminDocumentDetail(token: string, documentId: string) {
     ruleDefinitions: RuleDefinition[];
     overrides: OverrideRecord[];
     publishEvents: Array<{ id: string; document_version_id: string; author_email: string; summary?: string; created_at: string }>;
-  }>(`/api/admin/documents/${documentId}`, {
+  }>(`/api/admin?action=document&documentId=${encodeURIComponent(documentId)}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
@@ -126,7 +126,7 @@ export function updateAdminDocument(
   documentId: string,
   payload: Partial<{ title: string; issuer: string; baseDate: string; fileName: string; status: "draft" | "review" | "published" }>,
 ) {
-  return request(`/api/admin/documents/${documentId}`, {
+  return request(`/api/admin?action=document&documentId=${encodeURIComponent(documentId)}`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
@@ -134,7 +134,7 @@ export function updateAdminDocument(
 }
 
 export function replaceAdminProgramDrafts(token: string, documentId: string, drafts: ProgramDraftRecord[]) {
-  return request("/api/admin/program-drafts", {
+  return request("/api/admin?action=program-drafts", {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ documentId, drafts }),
@@ -142,7 +142,7 @@ export function replaceAdminProgramDrafts(token: string, documentId: string, dra
 }
 
 export function replaceAdminQuestionSets(token: string, documentId: string, questionSets: QuestionSetVersion[]) {
-  return request("/api/admin/questions", {
+  return request("/api/admin?action=questions", {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ documentId, questionSets }),
@@ -150,7 +150,7 @@ export function replaceAdminQuestionSets(token: string, documentId: string, ques
 }
 
 export function replaceAdminRules(token: string, documentId: string, rules: RuleDefinition[]) {
-  return request("/api/admin/rules", {
+  return request("/api/admin?action=rules", {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ documentId, rules }),
@@ -161,7 +161,7 @@ export function createAdminOverride(
   token: string,
   payload: { documentVersionId?: string | null; targetType: string; targetId: string; fieldName: string; value: string; reason: string; effectiveFrom: string },
 ) {
-  return request<{ override: OverrideRecord }>("/api/admin/overrides", {
+  return request<{ override: OverrideRecord }>("/api/admin?action=overrides", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
@@ -169,7 +169,7 @@ export function createAdminOverride(
 }
 
 export function publishAdminDocument(token: string, documentId: string) {
-  return request("/api/admin/publish", {
+  return request("/api/admin?action=publish", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ documentId }),
