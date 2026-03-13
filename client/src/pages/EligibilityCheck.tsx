@@ -30,6 +30,10 @@ import Navigation from "@/components/Navigation";
 import ConsultationForm from "@/components/ConsultationForm";
 import { usePrograms } from "@/hooks/usePrograms";
 import { categoryColors } from "@/lib/subsidyData";
+import {
+  createEligibilitySession as createEligibilitySessionRequest,
+  determineEligibilitySession as determineEligibilitySessionRequest,
+} from "@/lib/api";
 
 type FlowStep = "common" | "followup" | "result";
 
@@ -163,20 +167,25 @@ export default function EligibilityCheck() {
     setError(null);
 
     try {
-      const recommendations = recommendProgramIds(normalisedBaseAnswers);
-      const payload: SessionCreateResponse = {
-        session: {
-          id: `local-session-${Date.now()}`,
-          baseAnswers: normalisedBaseAnswers,
-          recommendations,
-        },
-        recommendedPrograms: recommendations.map((recommendation) => ({
-          program: programLookup.get(recommendation.programId) ?? null,
-        })),
-        followUpQuestions: getProgramFollowUpQuestions().filter((question) =>
-          recommendations.some((recommendation) => recommendation.programId === question.programId),
-        ),
-      };
+      let payload: SessionCreateResponse;
+      try {
+        payload = await createEligibilitySessionRequest(normalisedBaseAnswers) as SessionCreateResponse;
+      } catch {
+        const recommendations = recommendProgramIds(normalisedBaseAnswers);
+        payload = {
+          session: {
+            id: `local-session-${Date.now()}`,
+            baseAnswers: normalisedBaseAnswers,
+            recommendations,
+          },
+          recommendedPrograms: recommendations.map((recommendation) => ({
+            program: programLookup.get(recommendation.programId) ?? null,
+          })),
+          followUpQuestions: getProgramFollowUpQuestions().filter((question) =>
+            recommendations.some((recommendation) => recommendation.programId === question.programId),
+          ),
+        };
+      }
       setSessionId(payload.session.id);
       const resolvedPrograms = payload.recommendedPrograms
         .map((entry) => entry.program)
@@ -221,14 +230,25 @@ export default function EligibilityCheck() {
     setError(null);
 
     try {
-      const nextReports = determinePrograms(
-        recommendedPrograms.map((program) => program.program.legacyId),
-        normalisedBaseAnswers,
-        followUpAnswers,
-      ).map((determination) => ({
-        ...determination,
-        program: programLookup.get(determination.programId) ?? null,
-      }));
+      let nextReports: Array<DeterminationResult & { program: OperationalProgram | null }>;
+      try {
+        const response = await determineEligibilitySessionRequest(sessionId, followUpAnswers) as {
+          reports: DeterminationResult[];
+        };
+        nextReports = response.reports.map((determination) => ({
+          ...determination,
+          program: programLookup.get(determination.programId) ?? null,
+        }));
+      } catch {
+        nextReports = determinePrograms(
+          recommendedPrograms.map((program) => program.program.legacyId),
+          normalisedBaseAnswers,
+          followUpAnswers,
+        ).map((determination) => ({
+          ...determination,
+          program: programLookup.get(determination.programId) ?? null,
+        }));
+      }
       setReports(nextReports);
       const payload = {
         session: {
