@@ -146,6 +146,7 @@ export default async function handler(req: any, res: any) {
     }
   } catch (error) {
     console.warn("Supabase consultation lead insert failed, using memory fallback:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
 
     if (isSupabaseConfigured()) {
       getLeads().unshift(lead);
@@ -153,6 +154,7 @@ export default async function handler(req: any, res: any) {
         lead,
         storage: "memory-fallback",
         warning: "Supabase insert failed; stored in runtime fallback instead.",
+        supabaseError: errorMessage,
       });
       return;
     }
