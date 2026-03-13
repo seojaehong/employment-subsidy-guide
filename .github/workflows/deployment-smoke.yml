@@ -1,0 +1,71 @@
+name: Deployment Smoke Check
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Smoke test target URL"
+        required: false
+        default: "https://reporeview.vercel.app"
+
+jobs:
+  smoke:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: ${{ github.event_name == 'deployment_status' && github.event.deployment_status.environment_url || inputs.base_url || 'https://reporeview.vercel.app' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - name: Install dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: corepack pnpm exec playwright install --with-deps chromium
+
+      - name: Wait for deployment health
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Waiting for ${BASE_URL}/api/health"
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail "${BASE_URL}/api/health" >/dev/null; then
+              echo "Deployment is ready"
+              exit 0
+            fi
+            echo "Attempt ${attempt}/30: not ready yet"
+            sleep 10
+          done
+          echo "Deployment health check did not become ready in time"
+          exit 1
+
+      - name: Run eligibility smoke suite
+        run: corepack pnpm exec playwright test
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.BASE_URL }}
+
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-artifacts
+          path: |
+            playwright-report
+            test-results
