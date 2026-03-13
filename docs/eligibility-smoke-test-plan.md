@@ -206,8 +206,32 @@ npx.cmd playwright test
 - 동작
   - 배포 URL의 `/api/health` 준비 상태 대기
   - Playwright Chromium 설치
-  - 운영 URL 기준 smoke suite 실행
-  - 실패 시 Playwright 결과 아티팩트 업로드
+- 운영 URL 기준 smoke suite 실행
+- 실패 시 Playwright 결과 아티팩트 업로드
+
+## 관리자 운영 스모크
+
+- 파일: `e2e/admin-lifecycle.spec.ts`
+- 기본 동작
+  - 관리자 로그인
+  - 문서 draft 생성
+  - 문서 상세 재조회
+  - draft override 저장
+- 선택 동작
+  - `ALLOW_ADMIN_PUBLISH_SMOKE=true`일 때만 publish까지 수행
+- 필요한 환경변수
+  - `ADMIN_TEST_EMAIL`
+  - `ADMIN_TEST_PASSWORD`
+  - `ALLOW_ADMIN_PUBLISH_SMOKE`
+
+- 실행 예시
+
+```powershell
+$env:ADMIN_TEST_EMAIL="admin-codex@winners.local"
+$env:ADMIN_TEST_PASSWORD="Winners!2026Admin#"
+$env:ALLOW_ADMIN_PUBLISH_SMOKE="true"
+npx.cmd playwright test e2e/admin-lifecycle.spec.ts --reporter=list
+```
 
 ## 현재 한계
 
