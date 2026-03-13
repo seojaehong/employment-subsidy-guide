@@ -1,8 +1,5 @@
-import type { FollowUpAnswers } from "../../../../shared/subsidy.ts";
-import { determineEligibilitySessionRecord } from "../../../../server/eligibility-persistence.ts";
-
 function readBody(req: any) {
-  return new Promise<FollowUpAnswers>((resolve, reject) => {
+  return new Promise<any>((resolve, reject) => {
     if (req.body && typeof req.body === "object") {
       resolve(req.body as FollowUpAnswers);
       return;
@@ -14,7 +11,7 @@ function readBody(req: any) {
     });
     req.on("end", () => {
       try {
-        resolve(JSON.parse(body) as FollowUpAnswers);
+        resolve(JSON.parse(body));
       } catch (error) {
         reject(error);
       }
@@ -37,6 +34,9 @@ export default async function handler(req: any, res: any) {
 
   try {
     const followUpAnswers = await readBody(req);
+    const [{ determineEligibilitySessionRecord }] = await Promise.all([
+      import("../../../../server/eligibility-persistence.ts"),
+    ]);
     const payload = await determineEligibilitySessionRecord(sessionId, followUpAnswers);
     if (!payload) {
       res.status(404).json({ message: "Session not found" });

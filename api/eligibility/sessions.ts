@@ -1,5 +1,3 @@
-import type { BaseEligibilityAnswers, RecommendationRecord } from "../../shared/subsidy.ts";
-import { createEligibilitySessionRecord } from "../../server/eligibility-persistence.ts";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -26,7 +24,7 @@ const seedDb = require("../../../server/data/seed-db.json") as {
 };
 
 function readBody(req: any) {
-  return new Promise<BaseEligibilityAnswers>((resolve, reject) => {
+  return new Promise<any>((resolve, reject) => {
     if (req.body && typeof req.body === "object") {
       resolve(req.body as BaseEligibilityAnswers);
       return;
@@ -38,7 +36,7 @@ function readBody(req: any) {
     });
     req.on("end", () => {
       try {
-        resolve(JSON.parse(body) as BaseEligibilityAnswers);
+        resolve(JSON.parse(body));
       } catch (error) {
         reject(error);
       }
@@ -73,6 +71,9 @@ export default async function handler(req: any, res: any) {
 
   try {
     const baseAnswers = await readBody(req);
+    const [{ createEligibilitySessionRecord }] = await Promise.all([
+      import("../../server/eligibility-persistence.ts"),
+    ]);
     const payload = await createEligibilitySessionRecord(baseAnswers);
 
     res.status(201).json({
@@ -82,7 +83,7 @@ export default async function handler(req: any, res: any) {
         baseAnswers: payload.session.baseAnswers,
         recommendations: payload.session.recommendations,
       },
-      recommendedPrograms: payload.session.recommendations.map((recommendation: RecommendationRecord) => ({
+      recommendedPrograms: payload.session.recommendations.map((recommendation: any) => ({
         ...recommendation,
         program: getOperationalProgram(recommendation.programId),
       })),
