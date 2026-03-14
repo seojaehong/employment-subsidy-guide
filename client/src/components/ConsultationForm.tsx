@@ -35,6 +35,7 @@ interface ConsultationContext {
 interface ConsultationFormProps {
   subsidyName?: string;
   context?: ConsultationContext;
+  programNames?: Record<string, string>;
 }
 
 const consultTypes = [
@@ -52,8 +53,8 @@ const determinationStatusLabels: Record<DeterminationStatus, string> = {
   manual_review: "추가 확인 필요",
 };
 
-export default function ConsultationForm({ subsidyName, context }: ConsultationFormProps) {
-  const { programs } = usePrograms();
+export default function ConsultationForm({ subsidyName, context, programNames }: ConsultationFormProps) {
+  const { programs } = usePrograms({ skipRemote: Boolean(programNames) });
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -70,8 +71,11 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
   const determinationStatuses = context?.determinationStatuses ?? {};
   const missingItems = context?.missingItems ?? [];
   const programNameLookup = useMemo(
-    () => new Map(programs.map((program) => [program.program.legacyId, program.program.name])),
-    [programs],
+    () =>
+      programNames
+        ? new Map(Object.entries(programNames))
+        : new Map(programs.map((program) => [program.program.legacyId, program.program.name])),
+    [programNames, programs],
   );
   const statusSummary = useMemo(
     () =>

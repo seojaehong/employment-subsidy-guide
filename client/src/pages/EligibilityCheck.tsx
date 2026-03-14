@@ -96,7 +96,7 @@ const resultColors = {
 } as const;
 
 export default function EligibilityCheck() {
-  const { programs } = usePrograms();
+  const { programs } = usePrograms({ deferRemote: true, deferMs: 1500 });
   const [flowStep, setFlowStep] = useState<FlowStep>("common");
   const [commonQuestions, setCommonQuestions] = useState<EligibilityQuestionRecord[]>(() => getCommonEligibilityQuestions());
   const [commonAnswers, setCommonAnswers] = useState<Record<string, string | string[]>>({});
@@ -150,6 +150,19 @@ export default function EligibilityCheck() {
   );
 
   const selectedProgramIds = applicableReports.map((report) => report.programId);
+
+  const consultationProgramNames = useMemo(
+    () =>
+      Object.fromEntries(
+        selectedProgramIds
+          .map((programId) => {
+            const name = programLookup.get(programId)?.program.name;
+            return name ? ([programId, name] as const) : null;
+          })
+          .filter(Boolean) as Array<readonly [string, string]>,
+      ),
+    [programLookup, selectedProgramIds],
+  );
 
   const statusCounts = reports.reduce(
     (acc, report) => {
@@ -1037,6 +1050,7 @@ export default function EligibilityCheck() {
 
                 <ConsultationForm
                   subsidyName={selectedProgramIds.length > 0 ? "판정 결과 기반 지원금" : undefined}
+                  programNames={consultationProgramNames}
                   context={{
                     sessionId: sessionId ?? undefined,
                     interestedProgramIds: selectedProgramIds,

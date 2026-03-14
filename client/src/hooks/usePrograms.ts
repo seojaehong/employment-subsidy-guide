@@ -5,6 +5,11 @@ import { subsidyData } from "@/lib/subsidyData";
 
 let cachedPrograms: OperationalProgram[] | null = null;
 let programsRequest: Promise<OperationalProgram[]> | null = null;
+type UseProgramsOptions = {
+  deferRemote?: boolean;
+  deferMs?: number;
+  skipRemote?: boolean;
+};
 
 function buildFallbackPrograms(): OperationalProgram[] {
   return subsidyData.map((item) => ({
@@ -50,47 +55,64 @@ function buildFallbackPrograms(): OperationalProgram[] {
   }));
 }
 
-export function usePrograms() {
+export function usePrograms(options?: UseProgramsOptions) {
   const [programs, setPrograms] = useState<OperationalProgram[]>(cachedPrograms ?? buildFallbackPrograms());
   const [loading, setLoading] = useState(cachedPrograms === null);
   const [error, setError] = useState<string | null>(null);
+  const deferRemote = options?.deferRemote ?? false;
+  const deferMs = options?.deferMs ?? 1200;
+  const skipRemote = options?.skipRemote ?? false;
 
   useEffect(() => {
+    if (skipRemote) {
+      setLoading(false);
+      return;
+    }
     if (cachedPrograms) return;
 
     let active = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    const request =
-      programsRequest ??
-      fetchPrograms()
-        .then((payload) => {
-          cachedPrograms = payload.programs;
-          return payload.programs;
+    const startRequest = () => {
+      const request =
+        programsRequest ??
+        fetchPrograms()
+          .then((payload) => {
+            cachedPrograms = payload.programs;
+            return payload.programs;
+          })
+          .catch((error) => {
+            programsRequest = null;
+            throw error;
+          });
+      programsRequest = request;
+
+      request
+        .then((resolvedPrograms) => {
+          if (!active) return;
+          setPrograms(resolvedPrograms);
         })
-        .catch((error) => {
-          programsRequest = null;
-          throw error;
+        .catch((err: unknown) => {
+          if (!active) return;
+          setError(err instanceof Error ? err.message : "Failed to load programs");
+        })
+        .finally(() => {
+          if (!active) return;
+          setLoading(false);
         });
-    programsRequest = request;
+    };
 
-    request
-      .then((resolvedPrograms) => {
-        if (!active) return;
-        setPrograms(resolvedPrograms);
-      })
-      .catch((err: unknown) => {
-        if (!active) return;
-        setError(err instanceof Error ? err.message : "Failed to load programs");
-      })
-      .finally(() => {
-        if (!active) return;
-        setLoading(false);
-      });
+    if (deferRemote) {
+      timeoutId = setTimeout(startRequest, deferMs);
+    } else {
+      startRequest();
+    }
 
     return () => {
       active = false;
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [deferMs, deferRemote, skipRemote]);
 
   return { programs, loading, error };
 }
