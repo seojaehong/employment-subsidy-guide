@@ -863,8 +863,8 @@ export default function EligibilityCheck() {
                               <span className="mt-0.5 shrink-0">{item.icon}</span>
                               <span className="text-xs font-semibold leading-snug break-keep">{item.label}</span>
                             </div>
-                            <div className="mt-6 text-3xl font-black" style={{ color: "#F8FAFC" }}>
-                              {item.value}
+                            <div className="mt-6 flex items-center justify-center text-3xl font-black" style={{ color: "#F8FAFC" }}>
+                              <span>{item.value}</span>
                             </div>
                           </div>
                         </div>
