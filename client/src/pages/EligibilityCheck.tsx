@@ -798,8 +798,8 @@ export default function EligibilityCheck() {
                     border: "1px solid rgba(255,255,255,0.08)",
                   }}
                 >
-                  <div className="flex flex-col lg:flex-row gap-6 lg:items-end lg:justify-between">
-                    <div>
+                  <div className="flex flex-col gap-6">
+                    <div className="max-w-3xl">
                       <div
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
                         style={{
@@ -817,13 +817,13 @@ export default function EligibilityCheck() {
                       >
                         {summaryHeadline}
                       </h2>
-                      <p className="text-sm max-w-2xl" style={{ color: "rgba(248,250,252,0.68)" }}>
+                      <p className="text-sm max-w-2xl leading-relaxed" style={{ color: "rgba(248,250,252,0.68)" }}>
                         결과를 한 번에 이해하실 수 있도록 현재 상태와 이유, 다음 준비 순서를 중심으로 정리했습니다.
                         {` ${summaryGuide}`}
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 min-w-full lg:min-w-[420px]">
+                    <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
                       {[
                         {
                           label: resultLabels.eligible,
@@ -852,18 +852,20 @@ export default function EligibilityCheck() {
                       ].map((item) => (
                         <div
                           key={item.label}
-                          className="p-4 rounded-2xl"
+                          className="rounded-2xl p-4 min-h-[124px]"
                           style={{
                             background: item.color.bg,
                             border: `1px solid ${item.color.border}`,
                           }}
                         >
-                          <div className="flex items-center justify-between mb-3" style={{ color: item.color.text }}>
-                            {item.icon}
-                            <span className="text-xs font-semibold">{item.label}</span>
-                          </div>
-                          <div className="text-2xl font-black" style={{ color: "#F8FAFC" }}>
-                            {item.value}
+                          <div className="flex h-full flex-col justify-between">
+                            <div className="flex items-start gap-2" style={{ color: item.color.text }}>
+                              <span className="mt-0.5 shrink-0">{item.icon}</span>
+                              <span className="text-xs font-semibold leading-snug break-keep">{item.label}</span>
+                            </div>
+                            <div className="mt-6 text-3xl font-black" style={{ color: "#F8FAFC" }}>
+                              {item.value}
+                            </div>
                           </div>
                         </div>
                       ))}
