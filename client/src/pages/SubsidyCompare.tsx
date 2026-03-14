@@ -7,16 +7,18 @@ import {
   XCircle,
   Plus,
   X,
-  ArrowRight,
   BarChart3,
   ChevronRight,
 } from "lucide-react";
+import type { OperationalProgram, SubsidyCategory } from "@shared/subsidy";
 import Navigation from "@/components/Navigation";
-import { subsidyData, categoryColors, categories, type SubsidyCategory } from "@/lib/subsidyData";
+import { categoryColors, categories } from "@/lib/subsidyData";
+import { usePrograms } from "@/hooks/usePrograms";
 
 const MAX_COMPARE = 4;
 
 export default function SubsidyCompare() {
+  const { programs } = usePrograms();
   const [selected, setSelected] = useState<string[]>([]);
   const [filterCat, setFilterCat] = useState<SubsidyCategory | null>(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -32,12 +34,12 @@ export default function SubsidyCompare() {
   };
 
   const selectedSubsidies = selected
-    .map((id) => subsidyData.find((s) => s.id === id))
-    .filter(Boolean) as typeof subsidyData;
+    .map((id) => programs.find((entry) => entry.program.legacyId === id))
+    .filter((entry): entry is OperationalProgram => Boolean(entry));
 
   const filteredList = filterCat
-    ? subsidyData.filter((s) => s.category === filterCat)
-    : subsidyData;
+    ? programs.filter((entry) => entry.program.category === filterCat)
+    : programs;
 
   const companyTypes = ["우선지원대상기업", "중견기업", "대규모기업"] as const;
 
@@ -86,11 +88,12 @@ export default function SubsidyCompare() {
       <div className="container py-8">
         {/* Selected chips + Add button */}
         <div className="flex flex-wrap items-center gap-3 mb-8">
-          {selectedSubsidies.map((s) => {
+          {selectedSubsidies.map((entry) => {
+            const s = entry.program;
             const color = categoryColors[s.category];
             return (
               <div
-                key={s.id}
+                key={s.legacyId}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium"
                 style={{
                   background: color.bg,
@@ -99,7 +102,7 @@ export default function SubsidyCompare() {
                 }}
               >
                 {s.name}
-                <button onClick={() => toggle(s.id)}>
+                <button onClick={() => toggle(s.legacyId)}>
                   <X size={14} />
                 </button>
               </div>
@@ -182,13 +185,14 @@ export default function SubsidyCompare() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto">
-              {filteredList.map((s) => {
-                const isSelected = selected.includes(s.id);
+              {filteredList.map((entry) => {
+                const s = entry.program;
+                const isSelected = selected.includes(s.legacyId);
                 const color = categoryColors[s.category];
                 const disabled = !isSelected && selected.length >= MAX_COMPARE;
                 return (
                   <button
-                    key={s.id}
+                    key={s.legacyId}
                     className="flex items-center gap-2 p-3 rounded-xl text-left transition-all"
                     style={{
                       background: isSelected ? color.bg : "rgba(255,255,255,0.03)",
@@ -196,7 +200,7 @@ export default function SubsidyCompare() {
                       opacity: disabled ? 0.4 : 1,
                       cursor: disabled ? "not-allowed" : "pointer",
                     }}
-                    onClick={() => !disabled && toggle(s.id)}
+                    onClick={() => !disabled && toggle(s.legacyId)}
                     disabled={disabled}
                   >
                     <div
@@ -252,11 +256,12 @@ export default function SubsidyCompare() {
                 >
                   비교 항목
                 </div>
-                {selectedSubsidies.map((s) => {
+                {selectedSubsidies.map((entry) => {
+                  const s = entry.program;
                   const color = categoryColors[s.category];
                   return (
                     <div
-                      key={s.id}
+                      key={s.legacyId}
                       className="flex-1 p-4 rounded-t-2xl"
                       style={{
                         background: color.bg,
@@ -271,16 +276,16 @@ export default function SubsidyCompare() {
                             {s.category}
                           </div>
                           <div className="text-sm font-black leading-tight" style={{ color: "#F8FAFC" }}>
-                            {s.name}
+                          {s.name}
                           </div>
-                          {s.subName && (
+                        {s.subName && (
                             <div className="text-xs mt-0.5" style={{ color: color.text }}>
-                              {s.subName}
+                          {s.subName}
                             </div>
                           )}
                         </div>
                         <button
-                          onClick={() => toggle(s.id)}
+                          onClick={() => toggle(s.legacyId)}
                           style={{ color: "rgba(248,250,252,0.4)" }}
                         >
                           <X size={14} />
@@ -295,16 +300,17 @@ export default function SubsidyCompare() {
               {[
                 {
                   label: "지원 금액",
-                  render: (s: typeof subsidyData[0]) => {
+                  render: (entry: (typeof selectedSubsidies)[number]) => {
+                    const s = entry.program;
                     const color = categoryColors[s.category];
                     return (
                       <div>
                         <div className="text-base font-black mb-1" style={{ color: color.text }}>
                           {s.amountLabel}
                         </div>
-                        {s.amount.우선지원대상기업 && (
+                        {s.baseAmount.우선지원대상기업 && (
                           <div className="text-xs" style={{ color: "rgba(248,250,252,0.5)" }}>
-                            우선: {s.amount.우선지원대상기업.slice(0, 40)}
+                            우선: {s.baseAmount.우선지원대상기업.slice(0, 40)}
                           </div>
                         )}
                       </div>
@@ -313,25 +319,25 @@ export default function SubsidyCompare() {
                 },
                 {
                   label: "지원 기간",
-                  render: (s: typeof subsidyData[0]) => (
+                  render: (entry: (typeof selectedSubsidies)[number]) => (
                     <span className="text-sm font-semibold" style={{ color: "#F8FAFC" }}>
-                      {s.duration}
+                      {entry.program.duration}
                     </span>
                   ),
                 },
                 {
                   label: "신청 주기",
-                  render: (s: typeof subsidyData[0]) => (
+                  render: (entry: (typeof selectedSubsidies)[number]) => (
                     <span className="text-sm" style={{ color: "rgba(248,250,252,0.7)" }}>
-                      {s.applicationCycle}
+                      {entry.program.applicationCycle}
                     </span>
                   ),
                 },
                 {
                   label: "주요 요건",
-                  render: (s: typeof subsidyData[0]) => (
+                  render: (entry: (typeof selectedSubsidies)[number]) => (
                     <ul className="space-y-1.5">
-                      {s.requirements.slice(0, 3).map((req, i) => (
+                      {entry.rule.requirements.slice(0, 3).map((req, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <CheckCircle2
                             size={12}
@@ -348,10 +354,10 @@ export default function SubsidyCompare() {
                 },
                 {
                   label: "지원 제외",
-                  render: (s: typeof subsidyData[0]) =>
-                    s.exclusions.length > 0 ? (
+                  render: (entry: (typeof selectedSubsidies)[number]) =>
+                    entry.rule.exclusions.length > 0 ? (
                       <ul className="space-y-1.5">
-                        {s.exclusions.slice(0, 2).map((exc, i) => (
+                        {entry.rule.exclusions.slice(0, 2).map((exc, i) => (
                           <li key={i} className="flex items-start gap-2">
                             <XCircle
                               size={12}
@@ -372,10 +378,10 @@ export default function SubsidyCompare() {
                 },
                 {
                   label: "기업 규모별\n지원금",
-                  render: (s: typeof subsidyData[0]) => (
+                  render: (entry: (typeof selectedSubsidies)[number]) => (
                     <div className="space-y-1.5">
                       {companyTypes.map((type) => {
-                        const val = s.amount[type as keyof typeof s.amount];
+                        const val = entry.program.baseAmount[type as keyof typeof entry.program.baseAmount];
                         if (!val) return null;
                         return (
                           <div key={type}>
@@ -388,13 +394,13 @@ export default function SubsidyCompare() {
                           </div>
                         );
                       })}
-                      {s.amount.공통 && (
+                      {entry.program.baseAmount.공통 && (
                         <div>
                           <div className="text-xs font-semibold mb-0.5" style={{ color: "rgba(248,250,252,0.4)" }}>
                             공통
                           </div>
                           <div className="text-xs" style={{ color: "rgba(248,250,252,0.7)" }}>
-                            {s.amount.공통.slice(0, 50)}{s.amount.공통.length > 50 ? "…" : ""}
+                            {entry.program.baseAmount.공통.slice(0, 50)}{entry.program.baseAmount.공통.length > 50 ? "…" : ""}
                           </div>
                         </div>
                       )}
@@ -418,11 +424,12 @@ export default function SubsidyCompare() {
                       {row.label}
                     </span>
                   </div>
-                  {selectedSubsidies.map((s) => {
+                  {selectedSubsidies.map((entry) => {
+                    const s = entry.program;
                     const color = categoryColors[s.category];
                     return (
                       <div
-                        key={s.id}
+                        key={s.legacyId}
                         className="flex-1 p-4"
                         style={{
                           background: "rgba(255,255,255,0.02)",
@@ -432,7 +439,7 @@ export default function SubsidyCompare() {
                           minWidth: "200px",
                         }}
                       >
-                        {row.render(s)}
+                        {row.render(entry)}
                       </div>
                     );
                   })}
@@ -442,11 +449,12 @@ export default function SubsidyCompare() {
               {/* CTA row */}
               <div className="flex">
                 <div className="w-48 flex-shrink-0" />
-                {selectedSubsidies.map((s) => {
+                {selectedSubsidies.map((entry) => {
+                  const s = entry.program;
                   const color = categoryColors[s.category];
                   return (
                     <div
-                      key={s.id}
+                      key={s.legacyId}
                       className="flex-1 p-4 rounded-b-2xl"
                       style={{
                         background: color.bg,
@@ -455,7 +463,7 @@ export default function SubsidyCompare() {
                         minWidth: "200px",
                       }}
                     >
-                      <Link href={`/subsidies/${s.id}`}>
+                      <Link href={`/subsidies/${s.legacyId}`}>
                         <button
                           className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
                           style={{
@@ -472,23 +480,6 @@ export default function SubsidyCompare() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Apply to draft */}
-            <div className="mt-8 flex justify-center">
-              <Link href={`/apply?subsidies=${selected.join(",")}`}>
-                <button
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
-                  style={{
-                    background: "linear-gradient(135deg, #3B82F6, #2563EB)",
-                    color: "#fff",
-                    boxShadow: "0 0 25px rgba(59,130,246,0.35)",
-                  }}
-                >
-                  선택한 지원금으로 신청서 초안 생성
-                  <ArrowRight size={16} />
-                </button>
-              </Link>
             </div>
           </motion.div>
         ) : (
@@ -509,7 +500,7 @@ export default function SubsidyCompare() {
                   color: "#C4B5FD",
                 }}
               >
-                전체 지원금 목록 보기
+                제도 목록 다시 보기
               </button>
             </Link>
           </div>
@@ -525,7 +516,7 @@ export default function SubsidyCompare() {
         }}
       >
         <div className="container text-center text-xs" style={{ color: "rgba(248,250,252,0.25)" }}>
-          본 사이트의 정보는 참고용이며, 실제 지원금 신청 시 관할 고용센터 또는 전문 노무사와 상담하시기 바랍니다.
+          본 안내는 공개 기준을 바탕으로 먼저 정리한 참고용 정보입니다. 실제 신청 전에는 최신 공고와 사업장 상황을 함께 확인해보세요.
         </div>
       </footer>
     </div>

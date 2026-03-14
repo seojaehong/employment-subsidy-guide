@@ -108,6 +108,19 @@
     font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
+  h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, button, a, label, span {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
+  input, textarea, select, code, pre, kbd, samp {
+    word-break: normal;
+    overflow-wrap: normal;
+    line-break: auto;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

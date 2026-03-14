@@ -3,35 +3,37 @@ import { useState, useMemo } from "react";
 import { Link, useSearch } from "wouter";
 import { motion } from "framer-motion";
 import { Search, ChevronRight, Filter, X } from "lucide-react";
+import type { SubsidyCategory } from "@shared/subsidy";
 import Navigation from "@/components/Navigation";
 import {
-  subsidyData,
   categories,
   categoryColors,
-  type SubsidyCategory,
 } from "@/lib/subsidyData";
+import { usePrograms } from "@/hooks/usePrograms";
 
 export default function SubsidyList() {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const initialCategory = params.get("category") as SubsidyCategory | null;
+  const { programs } = usePrograms();
 
   const [selectedCategory, setSelectedCategory] = useState<SubsidyCategory | null>(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilter, setShowFilter] = useState(false);
 
   const filtered = useMemo(() => {
-    return subsidyData.filter((s) => {
+    return programs.filter((entry) => {
+      const s = entry.program;
       const matchCat = !selectedCategory || s.category === selectedCategory;
       const q = searchQuery.toLowerCase();
       const matchSearch =
         !q ||
         s.name.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
+        s.summary.toLowerCase().includes(q) ||
         s.tags.some((t) => t.toLowerCase().includes(q));
       return matchCat && matchSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [programs, selectedCategory, searchQuery]);
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0E1A" }}>
@@ -58,10 +60,10 @@ export default function SubsidyList() {
               className="text-3xl md:text-4xl font-black mb-4"
               style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}
             >
-              전체 지원금 안내
+              우리 회사에 맞는 제도 찾기
             </h1>
             <p className="text-base" style={{ color: "rgba(248,250,252,0.55)" }}>
-              총 {subsidyData.length}개 고용장려금 제도를 확인하세요.
+              총 {programs.length}개 제도 중에서 상황에 맞는 후보를 먼저 좁혀보세요.
             </p>
           </motion.div>
         </div>
@@ -101,11 +103,11 @@ export default function SubsidyList() {
                   }}
                   onClick={() => setSelectedCategory(null)}
                 >
-                  전체 ({subsidyData.length})
+                  전체 ({programs.length})
                 </button>
                 {categories.map((cat) => {
                   const color = categoryColors[cat];
-                  const count = subsidyData.filter((s) => s.category === cat).length;
+                  const count = programs.filter((entry) => entry.program.category === cat).length;
                   const isActive = selectedCategory === cat;
                   return (
                     <button
@@ -137,7 +139,7 @@ export default function SubsidyList() {
               />
               <input
                 type="text"
-                placeholder="지원금명, 키워드로 검색..."
+                placeholder="지원금명, 대상, 키워드로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
@@ -167,16 +169,17 @@ export default function SubsidyList() {
 
             {/* Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filtered.map((subsidy, i) => {
-                const color = categoryColors[subsidy.category];
+                          {filtered.map((subsidy, i) => {
+                const program = subsidy.program;
+                const color = categoryColors[program.category];
                 return (
                   <motion.div
-                    key={subsidy.id}
+                    key={program.legacyId}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: i * 0.04 }}
                   >
-                    <Link href={`/subsidies/${subsidy.id}`}>
+                    <Link href={`/subsidies/${program.legacyId}`}>
                       <div
                         className="group p-5 rounded-2xl cursor-pointer transition-all duration-300 h-full flex flex-col"
                         style={{
@@ -204,9 +207,9 @@ export default function SubsidyList() {
                               color: color.text,
                             }}
                           >
-                            {subsidy.category}
+                            {program.category}
                           </span>
-                          {subsidy.highlight && (
+                          {program.highlight && (
                             <span
                               className="text-xs font-semibold px-2 py-0.5 rounded-full"
                               style={{
@@ -222,11 +225,11 @@ export default function SubsidyList() {
 
                         {/* Title */}
                         <h3 className="text-base font-bold mb-0.5" style={{ color: "#F8FAFC" }}>
-                          {subsidy.name}
+                          {program.name}
                         </h3>
-                        {subsidy.subName && (
+                        {program.subName && (
                           <div className="text-xs mb-2" style={{ color: color.text }}>
-                            {subsidy.subName}
+                            {program.subName}
                           </div>
                         )}
 
@@ -235,9 +238,9 @@ export default function SubsidyList() {
                           className="text-sm leading-relaxed flex-1 mb-4"
                           style={{ color: "rgba(248,250,252,0.5)" }}
                         >
-                          {subsidy.description.length > 90
-                            ? subsidy.description.slice(0, 90) + "..."
-                            : subsidy.description}
+                          {program.summary.length > 90
+                            ? program.summary.slice(0, 90) + "..."
+                            : program.summary}
                         </p>
 
                         {/* Footer */}
@@ -250,7 +253,7 @@ export default function SubsidyList() {
                               지원 금액
                             </div>
                             <div className="text-sm font-bold" style={{ color: color.text }}>
-                              {subsidy.amountLabel}
+                              {program.amountLabel}
                             </div>
                           </div>
                           <ChevronRight
@@ -286,7 +289,7 @@ export default function SubsidyList() {
         }}
       >
         <div className="container text-center text-xs" style={{ color: "rgba(248,250,252,0.25)" }}>
-          본 사이트의 정보는 참고용이며, 실제 지원금 신청 시 관할 고용센터 또는 전문 노무사와 상담하시기 바랍니다.
+          본 안내는 공개 기준을 바탕으로 먼저 정리한 참고용 정보입니다. 실제 신청 전에는 최신 공고와 사업장 상황을 함께 확인해보세요.
         </div>
       </footer>
     </div>

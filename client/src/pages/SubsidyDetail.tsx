@@ -13,13 +13,17 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import ConsultationForm from "@/components/ConsultationForm";
-import { subsidyData, categoryColors } from "@/lib/subsidyData";
+import { categoryColors } from "@/lib/subsidyData";
+import { usePrograms } from "@/hooks/usePrograms";
 
 export default function SubsidyDetail() {
   const { id } = useParams<{ id: string }>();
-  const subsidy = subsidyData.find((s) => s.id === id);
+  const { programs } = usePrograms();
+  const operational = programs.find((entry) => entry.program.legacyId === id);
+  const subsidy = operational?.program;
+  const rule = operational?.rule;
 
-  if (!subsidy) {
+  if (!subsidy || !rule) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0E1A" }}>
         <Navigation />
@@ -43,8 +47,8 @@ export default function SubsidyDetail() {
   const color = categoryColors[subsidy.category];
 
   // Related subsidies (same category, different id)
-  const related = subsidyData
-    .filter((s) => s.category === subsidy.category && s.id !== subsidy.id)
+  const related = programs
+    .filter((entry) => entry.program.category === subsidy.category && entry.program.legacyId !== subsidy.legacyId)
     .slice(0, 3);
 
   return (
@@ -93,8 +97,8 @@ export default function SubsidyDetail() {
                   color: color.text,
                 }}
               >
-                {subsidy.category}
-              </span>
+              {subsidy.category}
+            </span>
               {subsidy.highlight && (
                 <span
                   className="text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -113,7 +117,7 @@ export default function SubsidyDetail() {
               className="text-3xl md:text-4xl font-black mb-2"
               style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}
             >
-              {subsidy.name}
+                              {subsidy.name}
             </h1>
             {subsidy.subName && (
               <div className="text-lg font-semibold mb-4" style={{ color: color.text }}>
@@ -124,7 +128,7 @@ export default function SubsidyDetail() {
               className="text-base leading-relaxed max-w-2xl"
               style={{ color: "rgba(248,250,252,0.6)" }}
             >
-              {subsidy.description}
+                              {subsidy.summary}
             </p>
           </motion.div>
         </div>
@@ -157,7 +161,7 @@ export default function SubsidyDetail() {
                 </h2>
               </div>
               <ul className="space-y-3">
-                {subsidy.requirements.map((req, i) => (
+                {rule.requirements.map((req, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <CheckCircle2
                       size={16}
@@ -196,7 +200,7 @@ export default function SubsidyDetail() {
               </div>
 
               <div className="space-y-3">
-                {subsidy.amount.공통 && (
+                {subsidy.baseAmount.공통 && (
                   <div
                     className="p-4 rounded-xl"
                     style={{
@@ -208,11 +212,11 @@ export default function SubsidyDetail() {
                       공통
                     </div>
                     <div className="text-sm leading-relaxed" style={{ color: "#F8FAFC" }}>
-                      {subsidy.amount.공통}
+                      {subsidy.baseAmount.공통}
                     </div>
                   </div>
                 )}
-                {subsidy.amount.우선지원대상기업 && (
+                {subsidy.baseAmount.우선지원대상기업 && (
                   <div
                     className="p-4 rounded-xl"
                     style={{
@@ -224,11 +228,11 @@ export default function SubsidyDetail() {
                       우선지원대상기업
                     </div>
                     <div className="text-sm leading-relaxed" style={{ color: "#F8FAFC" }}>
-                      {subsidy.amount.우선지원대상기업}
+                      {subsidy.baseAmount.우선지원대상기업}
                     </div>
                   </div>
                 )}
-                {subsidy.amount.중견기업 && (
+                {subsidy.baseAmount.중견기업 && (
                   <div
                     className="p-4 rounded-xl"
                     style={{
@@ -240,11 +244,11 @@ export default function SubsidyDetail() {
                       중견기업
                     </div>
                     <div className="text-sm leading-relaxed" style={{ color: "#F8FAFC" }}>
-                      {subsidy.amount.중견기업}
+                      {subsidy.baseAmount.중견기업}
                     </div>
                   </div>
                 )}
-                {subsidy.amount.대규모기업 && (
+                {subsidy.baseAmount.대규모기업 && (
                   <div
                     className="p-4 rounded-xl"
                     style={{
@@ -256,7 +260,7 @@ export default function SubsidyDetail() {
                       대규모기업
                     </div>
                     <div className="text-sm leading-relaxed" style={{ color: "#F8FAFC" }}>
-                      {subsidy.amount.대규모기업}
+                      {subsidy.baseAmount.대규모기업}
                     </div>
                   </div>
                 )}
@@ -297,7 +301,7 @@ export default function SubsidyDetail() {
                     지원 기간
                   </div>
                   <div className="text-sm font-medium" style={{ color: "#F8FAFC" }}>
-                    {subsidy.duration}
+                  {subsidy.duration}
                   </div>
                 </div>
                 <div
@@ -311,14 +315,14 @@ export default function SubsidyDetail() {
                     신청 주기
                   </div>
                   <div className="text-sm font-medium" style={{ color: "#F8FAFC" }}>
-                    {subsidy.applicationCycle}
+                  {subsidy.applicationCycle}
                   </div>
                 </div>
               </div>
             </motion.div>
 
             {/* 지원 제외 */}
-            {subsidy.exclusions.length > 0 && (
+            {rule.exclusions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -341,7 +345,7 @@ export default function SubsidyDetail() {
                   </h2>
                 </div>
                 <ul className="space-y-2">
-                  {subsidy.exclusions.map((exc, i) => (
+                  {rule.exclusions.map((exc, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <XCircle
                         size={14}
@@ -358,7 +362,7 @@ export default function SubsidyDetail() {
             )}
 
             {/* 유의사항 */}
-            {subsidy.notes.length > 0 && (
+            {rule.notes.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -381,7 +385,7 @@ export default function SubsidyDetail() {
                   </h2>
                 </div>
                 <ul className="space-y-2">
-                  {subsidy.notes.map((note, i) => (
+                  {rule.notes.map((note, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <AlertTriangle
                         size={14}
@@ -480,7 +484,7 @@ export default function SubsidyDetail() {
                       boxShadow: "0 0 20px rgba(59,130,246,0.3)",
                     }}
                   >
-                    자격 검토 시작하기
+                    이 제도 기준으로 확인하기
                   </button>
                 </Link>
                 <Link href="/subsidies">
@@ -516,9 +520,9 @@ export default function SubsidyDetail() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {related.map((rel) => {
-                const relColor = categoryColors[rel.category];
+                const relColor = categoryColors[rel.program.category];
                 return (
-                  <Link key={rel.id} href={`/subsidies/${rel.id}`}>
+                  <Link key={rel.program.legacyId} href={`/subsidies/${rel.program.legacyId}`}>
                     <div
                       className="group p-5 rounded-2xl cursor-pointer transition-all duration-300"
                       style={{
@@ -535,15 +539,15 @@ export default function SubsidyDetail() {
                       }}
                     >
                       <h3 className="text-sm font-bold mb-1" style={{ color: "#F8FAFC" }}>
-                        {rel.name}
+                        {rel.program.name}
                       </h3>
-                      {rel.subName && (
+                      {rel.program.subName && (
                         <div className="text-xs mb-2" style={{ color: relColor.text }}>
-                          {rel.subName}
+                          {rel.program.subName}
                         </div>
                       )}
                       <div className="text-sm font-semibold" style={{ color: relColor.text }}>
-                        {rel.amountLabel}
+                        {rel.program.amountLabel}
                       </div>
                     </div>
                   </Link>
@@ -563,7 +567,7 @@ export default function SubsidyDetail() {
         }}
       >
         <div className="container text-center text-xs" style={{ color: "rgba(248,250,252,0.25)" }}>
-          본 사이트의 정보는 참고용이며, 실제 지원금 신청 시 관할 고용센터 또는 전문 노무사와 상담하시기 바랍니다.
+          본 안내는 공개 기준을 바탕으로 먼저 정리한 참고용 정보입니다. 실제 신청 전에는 최신 공고와 사업장 상황을 함께 확인해보세요.
         </div>
       </footer>
     </div>

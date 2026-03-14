@@ -68,8 +68,8 @@ const categoryDescriptions: Record<string, string> = {
 };
 
 const highlights = [
-  { icon: <CheckCircle2 size={16} />, text: "2026년 최신 기준 반영" },
-  { icon: <CheckCircle2 size={16} />, text: "노무법인 위너스 검토 완료" },
+  { icon: <CheckCircle2 size={16} />, text: "2026년 1월 공식 가이드 반영" },
+  { icon: <CheckCircle2 size={16} />, text: "고령자 계속고용 2026 가이드 반영" },
   { icon: <CheckCircle2 size={16} />, text: "17개 지원금 제도 수록" },
 ];
 
@@ -139,7 +139,7 @@ export default function Home() {
                   color: "#93C5FD",
                 }}
               >
-                2026년도 최신 기준
+                2026년 공식 가이드 기준
               </span>
               <span
                 className="px-3 py-1 rounded-full text-xs font-semibold"
@@ -162,7 +162,7 @@ export default function Home() {
               className="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] mb-6"
               style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}
             >
-              고용장려금,
+              우리 회사에 맞는
               <br />
               <span
                 style={{
@@ -172,7 +172,7 @@ export default function Home() {
                   backgroundClip: "text",
                 }}
               >
-                지금 바로 확인하세요
+                고용장려금부터 찾으세요
               </span>
             </motion.h1>
 
@@ -185,8 +185,8 @@ export default function Home() {
               className="text-lg md:text-xl leading-relaxed mb-8"
               style={{ color: "rgba(248,250,252,0.65)" }}
             >
-              2026년도 고용창출·고용안정·출산육아·청년·장년 등<br className="hidden md:block" />
-              17개 고용장려금 제도를 한눈에 확인하고 신청 자격을 검토하세요.
+              2026년 고용노동부 가이드 기준으로 자주 찾는 17개 고용장려금을 먼저 정리하고,<br className="hidden md:block" />
+              우리 회사 상황에 맞는 제도와 다음 준비 순서를 빠르게 확인할 수 있습니다.
             </motion.p>
 
             {/* Highlights */}
@@ -234,7 +234,7 @@ export default function Home() {
                     (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 30px rgba(59,130,246,0.4)";
                   }}
                 >
-                  자격 검토 시작하기
+                  우리 회사 기준으로 확인하기
                   <ArrowRight size={18} />
                 </button>
               </Link>
@@ -253,7 +253,7 @@ export default function Home() {
                     (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)";
                   }}
                 >
-                  전체 지원금 보기
+                  제도 먼저 살펴보기
                   <ChevronRight size={18} />
                 </button>
               </Link>
@@ -263,17 +263,17 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
           <div
-            className="w-6 h-10 rounded-full border-2 flex items-start justify-center pt-2"
-            style={{ borderColor: "rgba(255,255,255,0.2)" }}
+            className="w-5 h-8 rounded-full border flex items-start justify-center pt-1.5"
+            style={{ borderColor: "rgba(255,255,255,0.16)" }}
           >
             <div
-              className="w-1 h-2 rounded-full"
-              style={{ background: "rgba(255,255,255,0.4)" }}
+              className="w-1 h-1.5 rounded-full"
+              style={{ background: "rgba(255,255,255,0.32)" }}
             />
           </div>
         </motion.div>
@@ -623,31 +623,25 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            {/* Connector line */}
-            <div
-              className="hidden md:block absolute top-12 left-1/3 right-1/3 h-px"
-              style={{ background: "linear-gradient(90deg, rgba(59,130,246,0.3), rgba(16,185,129,0.3))" }}
-            />
-
             {[
               {
                 step: "01",
                 title: "지원금 안내 확인",
-                desc: "17개 고용장려금 제도의 지원요건, 금액, 신청 방법을 상세히 확인합니다.",
+                desc: "17개 고용장려금 제도의 지원요건, 금액, 신청 방법을 공식 가이드 기준으로 확인합니다.",
                 color: "#60A5FA",
                 icon: <Briefcase size={24} />,
               },
               {
                 step: "02",
-                title: "자격 요건 검토",
-                desc: "기업 규모, 근로자 현황 등을 입력하면 신청 가능한 지원금을 자동으로 확인합니다.",
+                title: "현재 상황 빠르게 확인",
+                desc: "기업 규모와 인력 상황을 바탕으로 먼저 볼 제도와 확인이 필요한 조건을 바로 정리합니다.",
                 color: "#34D399",
                 icon: <UserCheck size={24} />,
               },
               {
                 step: "03",
-                title: "신청 자동화 (준비 중)",
-                desc: "검토 결과를 바탕으로 신청 서류를 자동 생성하고 제출까지 도와드립니다.",
+                title: "후속 준비 이어가기",
+                desc: "결과와 보완 항목을 바탕으로 실제 신청 전 필요한 자료와 다음 순서를 이어서 정리합니다.",
                 color: "#FCD34D",
                 icon: <Zap size={24} />,
               },
@@ -659,7 +653,7 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 custom={i * 0.15}
-                className="relative p-6 rounded-2xl"
+                className="relative z-10 p-6 rounded-2xl"
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.07)",
@@ -724,13 +718,15 @@ export default function Home() {
                 textShadow: "0 0 60px rgba(59,130,246,0.3)",
               }}
             >
-              지금 바로 자격 검토를 시작하세요
+              먼저 확인하고
+              <br />
+              필요한 준비만 이어가세요
             </h2>
             <p
               className="text-lg mb-10 max-w-xl mx-auto"
               style={{ color: "rgba(248,250,252,0.6)" }}
             >
-              몇 가지 질문에 답하면 귀사에 적합한 고용장려금을 확인할 수 있습니다.
+              몇 가지 질문에 답하면 지금 살펴볼 제도와 먼저 챙기면 좋은 항목을 차분하게 정리해드립니다.
             </p>
             <Link href="/check">
               <button
@@ -749,7 +745,7 @@ export default function Home() {
                   (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 40px rgba(59,130,246,0.5)";
                 }}
               >
-                무료 자격 검토 시작
+                자격 검토 이어가기
                 <ArrowRight size={20} />
               </button>
             </Link>
@@ -780,7 +776,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-xs" style={{ color: "rgba(248,250,252,0.35)" }}>
-                노무법인 위너스 제공 · 2026년도 고용장려금 적합여부 검토 기반
+                노무법인 위너스 제공 · 고용노동부 2026 공식 가이드 반영
               </p>
             </div>
             <div className="flex gap-6">
@@ -803,7 +799,7 @@ export default function Home() {
               color: "rgba(248,250,252,0.25)",
             }}
           >
-            본 사이트의 정보는 참고용이며, 실제 지원금 신청 시 관할 고용센터 또는 전문 노무사와 상담하시기 바랍니다.
+            본 결과는 공개 기준을 바탕으로 먼저 정리한 참고용 안내입니다. 실제 신청 전에는 최신 공고와 사업장 상황을 함께 확인해보세요.
           </div>
         </div>
       </footer>

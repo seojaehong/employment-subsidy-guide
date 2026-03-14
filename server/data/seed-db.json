@@ -1,0 +1,1498 @@
+{
+  "subsidy_program": [
+    {
+      "id": "program-employment-promotion",
+      "legacyId": "employment-promotion",
+      "name": "고용촉진장려금",
+      "category": "고용창출장려금",
+      "summary": "취업이 어려운 취약계층 실업자를 정규직으로 고용하고 6개월 이상 고용을 유지한 사업주에게 지원하는 장려금입니다.",
+      "amountLabel": "월 최대 60만원",
+      "duration": "기본 1년, 일부 취약계층 최대 2년",
+      "applicationCycle": "6개월 단위 신청",
+      "tags": [
+        "취약계층",
+        "신규채용",
+        "정규직",
+        "구직등록"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "우선지원대상기업": "월 60만원",
+        "중견기업": "월 60만원",
+        "대규모기업": "월 30만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-work-life-balance",
+      "legacyId": "work-life-balance",
+      "name": "워라밸 일자리 장려금",
+      "subName": "소정근로시간 단축",
+      "category": "고용안정장려금",
+      "summary": "전일제 근로자의 소정근로시간 단축을 허용한 우선지원대상기업 및 중견기업 사업주에게 지원하는 장려금입니다.",
+      "amountLabel": "월 최대 50만원",
+      "duration": "근로시간 단축 개시일부터 최대 1년",
+      "applicationCycle": "3개월 단위 신청",
+      "tags": [
+        "근로시간단축",
+        "워라밸",
+        "우선지원",
+        "중견기업"
+      ],
+      "baseAmount": {
+        "우선지원대상기업": "장려금 월 30만원 + 임금감소액보전금 월 20만원",
+        "중견기업": "장려금 월 30만원 + 임금감소액보전금 월 20만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-work-life-45",
+      "legacyId": "work-life-45",
+      "name": "워라밸 일자리 장려금",
+      "subName": "워라밸+4.5 프로젝트",
+      "category": "고용안정장려금",
+      "summary": "노사 합의로 임금 감소 없이 주4.5일제 등 실노동시간 단축 제도를 도입한 사업장을 지원하는 공모형 장려금입니다.",
+      "amountLabel": "월 20만~60만원 + 채용 월 60만~80만원",
+      "duration": "최대 1년",
+      "applicationCycle": "분기별 신청",
+      "tags": [
+        "주4.5일제",
+        "근무혁신",
+        "공모형",
+        "노사합의"
+      ],
+      "baseAmount": {
+        "우선지원대상기업": "도입지원 월 20만~60만원 / 신규 채용지원 월 60만~80만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-flexible-work",
+      "legacyId": "flexible-work",
+      "name": "일·가정 양립 환경개선 지원",
+      "subName": "유연근무제 / 시스템 구축",
+      "category": "고용안정장려금",
+      "summary": "재택·원격근무, 선택근무, 육아기 시차출퇴근 등 유연근무 활용과 관련 시스템 구축 비용을 지원합니다.",
+      "amountLabel": "최대 360만원 + 시스템 최대 1,000만원",
+      "duration": "유형별 최대 1년, 시스템 사용의무기간 최대 2년",
+      "applicationCycle": "유연근무는 3개월 단위 신청",
+      "tags": [
+        "유연근무",
+        "재택근무",
+        "원격근무",
+        "선택근무",
+        "인프라"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "우선지원대상기업": "재택·원격근무 월 20만원 / 선택근무 월 30만원 / 육아기 근로자 활용 시 2배",
+        "중견기업": "재택·원격근무 월 20만원 / 선택근무 월 30만원 / 육아기 근로자 활용 시 2배",
+        "공통": "시스템 투자비 80%, 최대 1,000만원 (30인 미만은 출퇴근 관리시스템 사용료 1년 180만원, 2년 360만원 한도)"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-parental-leave-replacement",
+      "legacyId": "parental-leave-replacement",
+      "name": "출산육아기 고용안정장려금",
+      "subName": "대체인력 지원금",
+      "category": "고용안정장려금",
+      "summary": "출산전후휴가, 유사산휴가, 육아기 근로시간 단축을 30일 이상 허용하고 대체인력을 30일 이상 고용한 우선지원대상기업에 지원합니다.",
+      "amountLabel": "월 최대 140만원",
+      "duration": "해당 기간",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "출산",
+        "육아",
+        "대체인력",
+        "우선지원"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "우선지원대상기업": "30인 미만 월 140만원 / 30인 이상 월 130만원 / 육아기단축 대체인력은 월 120만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-work-sharing",
+      "legacyId": "work-sharing",
+      "name": "출산육아기 고용안정장려금",
+      "subName": "업무분담지원금",
+      "category": "고용안정장려금",
+      "summary": "육아휴직이나 육아기 근로시간 단축을 30일 이상 부여하고 업무분담자를 지정해 수당을 지급한 경우 지원합니다.",
+      "amountLabel": "월 최대 60만원",
+      "duration": "해당 기간",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "육아",
+        "업무분담",
+        "우선지원"
+      ],
+      "baseAmount": {
+        "우선지원대상기업": "30인 미만 월 최대 60만원 / 30인 이상 월 최대 40만원 / 육아기 근로시간 단축은 월 20만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-parental-leave-childcare",
+      "legacyId": "parental-leave-childcare",
+      "name": "출산육아기 고용안정장려금",
+      "subName": "육아기 근로시간 단축",
+      "category": "고용안정장려금",
+      "summary": "육아기 근로시간 단축을 허용한 우선지원대상기업에 지원합니다.",
+      "amountLabel": "월 최대 40만원",
+      "duration": "해당 기간",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "육아",
+        "근로시간단축",
+        "우선지원"
+      ],
+      "baseAmount": {
+        "우선지원대상기업": "월 30만원 (인센티브 적용 시 월 40만원)"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-parental-leave-full",
+      "legacyId": "parental-leave-full",
+      "name": "출산육아기 고용안정장려금",
+      "subName": "육아휴직",
+      "category": "고용안정장려금",
+      "summary": "근로자에게 육아휴직을 30일 이상 허용한 우선지원대상기업에 지원합니다.",
+      "amountLabel": "첫 3개월 월 100만원",
+      "duration": "해당 기간",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "육아휴직",
+        "남성육아",
+        "우선지원"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "우선지원대상기업": "첫 3개월 월 100만원 + 이후 월 30만원 / 남성 육아휴직은 월 10만원 추가"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-employment-maintenance",
+      "legacyId": "employment-maintenance",
+      "name": "유급 고용유지지원금",
+      "category": "고용유지지원금",
+      "summary": "경영 사정 악화로 휴업·휴직 등 고용유지조치를 하고 임금 또는 수당을 지급하며 근로자의 고용을 유지한 경우 지원합니다.",
+      "amountLabel": "휴업·휴직수당의 최대 2/3",
+      "duration": "휴업·휴직 합산 연 180일 한도",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "고용유지",
+        "휴업",
+        "휴직",
+        "경영위기"
+      ],
+      "baseAmount": {
+        "우선지원대상기업": "휴업수당의 2/3 / 휴직수당의 2/3 (1일 6.6만원, 고용위기지역 7만원 한도)",
+        "중견기업": "휴업수당·휴직수당의 1/2~2/3",
+        "대규모기업": "휴업수당·휴직수당의 1/2~2/3 (일부는 2/3)"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-unpaid-leave",
+      "legacyId": "unpaid-leave",
+      "name": "무급 휴업·휴직 고용유지지원금",
+      "category": "고용유지지원금",
+      "summary": "심사위원회 심사를 거쳐 무급휴업 또는 무급휴직을 실시하는 사업주를 지원합니다.",
+      "amountLabel": "평균임금 50% 범위 내",
+      "duration": "최대 180일",
+      "applicationCycle": "계획 승인 후 신청",
+      "tags": [
+        "무급휴업",
+        "무급휴직",
+        "경영위기"
+      ],
+      "baseAmount": {
+        "공통": "근로자 평균임금의 50% 범위 내 (1일 6.6만원, 최대 180일) / 직업능력개발 교육 시 사업주 월 10만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-youth-employment",
+      "legacyId": "youth-employment",
+      "name": "청년일자리도약장려금",
+      "category": "청년고용장려금",
+      "summary": "5인 이상 우선지원대상기업과 일부 산업단지 입주 중견기업이 청년을 정규직으로 채용하고 6개월 이상 고용 유지한 경우 지원합니다.",
+      "amountLabel": "월 최대 60만원",
+      "duration": "최장 1년",
+      "applicationCycle": "참여신청 승인 후 6개월 고용유지 뒤 신청",
+      "tags": [
+        "청년",
+        "정규직",
+        "도약장려금"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "우선지원대상기업": "신규채용 청년 1인당 월 최대 60만원",
+        "중견기업": "비수도권 산업단지 입주 기업은 신규채용 청년 1인당 월 최대 60만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-elderly-employment",
+      "legacyId": "elderly-employment",
+      "name": "고령자 고용지원금",
+      "category": "장년고용장려금",
+      "summary": "60세 이상 고령자 수가 이전 기준보다 증가한 우선지원대상기업, 중견기업, 사회적기업에 지원합니다.",
+      "amountLabel": "분기 30만원/인",
+      "duration": "증가 인원 1인당 2년",
+      "applicationCycle": "분기별 신청",
+      "tags": [
+        "고령자",
+        "60세이상",
+        "분기신청"
+      ],
+      "baseAmount": {
+        "공통": "증가 인원 1명당 분기 30만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-continued-employment",
+      "legacyId": "continued-employment",
+      "name": "고령자 계속고용장려금",
+      "category": "장년고용장려금",
+      "summary": "정년제도를 1년 이상 운영한 사업장이 정년연장, 정년폐지 또는 재고용 형태의 계속고용제도를 도입해 정년 도달 근로자를 고용 연장한 경우 지원합니다.",
+      "amountLabel": "분기 90만~120만원/인",
+      "duration": "계속고용 근로자 1인당 최대 3년",
+      "applicationCycle": "분기별 신청",
+      "tags": [
+        "고령자",
+        "정년연장",
+        "재고용",
+        "계속고용"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "우선지원대상기업": "수도권 분기 90만원 / 비수도권 분기 120만원",
+        "중견기업": "수도권 분기 90만원 / 비수도권 분기 120만원",
+        "공통": "사회적기업도 동일 기준 적용"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-2026-continued-employment",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-continued-employment",
+      "published": true
+    },
+    {
+      "id": "program-daycare-center",
+      "legacyId": "daycare-center",
+      "name": "직장어린이집 인건비 및 운영비 지원",
+      "category": "고용환경개선장려금",
+      "summary": "직장어린이집을 설치·운영하고 보육교직원을 고용한 사업장에 인건비와 운영비를 지원합니다.",
+      "amountLabel": "인건비 + 운영비",
+      "duration": "해당 기간",
+      "applicationCycle": "인건비는 월별, 운영비는 분기별 신청",
+      "tags": [
+        "어린이집",
+        "보육",
+        "인건비",
+        "운영비"
+      ],
+      "baseAmount": {
+        "공통": "직장보육교사 등 인건비 + 중소기업 직장어린이집 운영비"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-daycare-installation",
+      "legacyId": "daycare-installation",
+      "name": "직장어린이집 설치비 지원",
+      "category": "고용환경개선장려금",
+      "summary": "직장어린이집을 설치하고자 하는 사업주나 사업주 단체에 설치비, 교재교구비, 임차비를 무상 지원합니다.",
+      "amountLabel": "설치비 최대 4억원+",
+      "duration": "설치 시 1회",
+      "applicationCycle": "신청 후 심사",
+      "tags": [
+        "어린이집",
+        "설치비",
+        "교재교구",
+        "임차비"
+      ],
+      "baseAmount": {
+        "공통": "소요비용의 60~90% 범위, 한도 3억원(우선지원대상기업 단독형 4억원, 공동형 20억원)"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-elderly-facility",
+      "legacyId": "elderly-facility",
+      "name": "고령자 고용환경 개선자금 융자",
+      "category": "고용환경개선장려금",
+      "summary": "고령자 친화적 시설 또는 장비의 설치·개선·교체·구입 비용을 융자 지원합니다.",
+      "amountLabel": "최대 10억원 융자",
+      "duration": "3년 거치 5년 균등분할 상환",
+      "applicationCycle": "신청 후 심사",
+      "tags": [
+        "고령자",
+        "시설개선",
+        "융자"
+      ],
+      "baseAmount": {
+        "공통": "사업주당 10억원 한도, 3년 거치 5년 균등분할 상환"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-disability-employment",
+      "legacyId": "disability-employment",
+      "name": "장애인 고용 장려금",
+      "category": "장애인고용",
+      "summary": "의무고용률을 초과하여 장애인을 고용하고 최저임금 이상을 지급한 사업주에게 지원합니다.",
+      "amountLabel": "월 35만~90만원/인",
+      "duration": "해당 기간",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "장애인",
+        "의무고용",
+        "장애인고용"
+      ],
+      "baseAmount": {
+        "공통": "장애인 근로자 1명당 월 35만~90만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-disability-new-hire",
+      "legacyId": "disability-new-hire",
+      "name": "장애인 신규 고용장려금",
+      "category": "장애인고용",
+      "summary": "장애인 고용 의무가 없는 5인 이상 50인 미만 사업주가 장애인 근로자를 신규 고용해 6개월 이상 유지한 경우 지원합니다.",
+      "amountLabel": "월 30만~80만원/인",
+      "duration": "6개월 또는 1년 단위",
+      "applicationCycle": "신청 후 지급",
+      "tags": [
+        "장애인",
+        "신규고용",
+        "소규모사업장"
+      ],
+      "baseAmount": {
+        "공통": "6개월 또는 1년 단위, 중증도·성별에 따라 월 30만~80만원"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-regional-employment",
+      "legacyId": "regional-employment",
+      "name": "지역고용촉진지원금",
+      "category": "지역고용촉진지원금",
+      "summary": "고용위기지역으로 사업을 이전·신설·증설하고 해당 지역 거주 구직자를 채용해 고용을 창출한 사업주에게 지원합니다.",
+      "amountLabel": "월 통상임금의 1/2",
+      "duration": "최대 1년",
+      "applicationCycle": "조업 시작 다음달부터 3개월마다 신청",
+      "tags": [
+        "고용위기지역",
+        "지역이전",
+        "통상임금"
+      ],
+      "baseAmount": {
+        "우선지원대상기업": "근로자 1명당 월 통상임금의 1/2",
+        "중견기업": "근로자 1명당 월 통상임금의 1/2",
+        "대규모기업": "근로자 1명당 월 통상임금의 1/3"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    },
+    {
+      "id": "program-regular-conversion",
+      "legacyId": "regular-conversion",
+      "name": "정규직 전환 지원금",
+      "category": "정규직전환지원",
+      "summary": "기간제·파견·사내하도급 근로자 또는 노무제공자를 정규직으로 전환하거나 직접고용한 5인 이상 30인 미만 기업에 지원합니다.",
+      "amountLabel": "월 최대 60만원",
+      "duration": "최대 1년",
+      "applicationCycle": "3개월 단위 지급 신청",
+      "tags": [
+        "정규직전환",
+        "비정규직",
+        "직접고용",
+        "소규모사업장"
+      ],
+      "highlight": true,
+      "baseAmount": {
+        "공통": "월 40만원 (전환 후 월평균 임금 20만원 이상 증가 시 월 60만원)"
+      },
+      "sourceDocumentIds": [
+        "doc-2026-subsidy-guide",
+        "doc-winners-review"
+      ],
+      "latestSourceDocumentId": "doc-2026-subsidy-guide",
+      "published": true
+    }
+  ],
+  "subsidy_rule": [
+    {
+      "id": "rule-employment-promotion",
+      "programId": "employment-promotion",
+      "requirements": [
+        "고용촉진장려금 지원 대상 실업자를 정규직으로 고용",
+        "고용일 이전 요건에 맞는 구직등록 이력 보유",
+        "고용 후 6개월 이상 고용 유지"
+      ],
+      "exclusions": [
+        "근로계약기간의 정함이 있는 근로자(예외 제외)",
+        "월평균 보수 124만원 미만 근로자",
+        "사업주 배우자 및 직계 존비속",
+        "임금체불 명단 공개 또는 중대산업재해 공표 사업주"
+      ],
+      "notes": [
+        "우선지원대상기업·중견기업 연간 총액 720만원, 대규모기업 연간 총액 360만원",
+        "국민취업지원제도 일부 수급자, 중증장애인, 여성가장은 최대 2년 지원"
+      ],
+      "followUpQuestionIds": [
+        "employment-promotion.jobSeekerRegistration",
+        "employment-promotion.regularEmployment",
+        "employment-promotion.maintainSixMonths",
+        "employment-promotion.wageLevel"
+      ]
+    },
+    {
+      "id": "rule-work-life-balance",
+      "programId": "work-life-balance",
+      "requirements": [
+        "전일제 근로자의 소정근로시간 단축 허용",
+        "우선지원대상기업 또는 중견기업",
+        "근태관리 기준 준수",
+        "다음달부터 12개월 이내 3개월 단위 신청"
+      ],
+      "exclusions": [
+        "월평균 보수 124만원 미만 근로자",
+        "사업주 배우자 및 직계 존비속",
+        "고용보험 미가입 근로자"
+      ],
+      "notes": [
+        "임금감소액보전금은 사업주 보전액이 월 20만원 이상일 때만 지급",
+        "육아기 10시 출근제는 임금감소액보전금 미지원"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-work-life-45",
+      "programId": "work-life-45",
+      "requirements": [
+        "20인 이상 우선지원대상기업(일부 업종은 300인 이상도 가능)",
+        "노사 합의와 실근로시간 단축 계획 수립",
+        "노사발전재단 참여신청 및 승인",
+        "전자·기계적 방식의 근태관리"
+      ],
+      "exclusions": [
+        "실근로시간 단축 전 주 30시간 미만 근로자 비중이 50% 초과하는 사업장"
+      ],
+      "notes": [
+        "비수도권, 생명·안전 업종, 장시간 노동 사업장 등은 월 10만원 가산 가능",
+        "20인 이상~50인 미만은 전체 대상자, 50인 이상은 도입지원 최대 100명"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-flexible-work",
+      "programId": "flexible-work",
+      "requirements": [
+        "우선지원대상기업 또는 중견기업",
+        "근로계약서·취업규칙 등에 제도 도입 내용 규정",
+        "전자·기계적 방식 또는 허용된 방식으로 근태관리",
+        "유형별 최소 활용 기준 충족"
+      ],
+      "exclusions": [
+        "동일 품목으로 다른 법령에 따른 시스템·시설 지원을 받는 경우"
+      ],
+      "notes": [
+        "재택·원격근무와 육아기 시차출퇴근은 월 4일 이상 활용 시 지원",
+        "선택근무는 월 6시간 이상 단축, 단축일 1시간 이상 단축 시 지원",
+        "PC·노트북 등 통신장비와 건물·토지 비용은 시스템 지원 제외"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-parental-leave-replacement",
+      "programId": "parental-leave-replacement",
+      "requirements": [
+        "출산전후휴가, 유사산휴가, 육아기 근로시간 단축을 30일 이상 허용",
+        "대체인력을 30일 이상 고용",
+        "우선지원대상기업",
+        "월 통상임금의 80% 한도"
+      ],
+      "exclusions": [],
+      "notes": [
+        "월 통상임금의 80% 한도"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-work-sharing",
+      "programId": "work-sharing",
+      "requirements": [
+        "육아휴직 또는 육아기 근로시간 단축 30일 이상 부여",
+        "업무분담자 지정 및 업무분담수당 지급"
+      ],
+      "exclusions": [],
+      "notes": [],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-parental-leave-childcare",
+      "programId": "parental-leave-childcare",
+      "requirements": [
+        "육아기 근로시간 단축 허용",
+        "우선지원대상기업"
+      ],
+      "exclusions": [],
+      "notes": [
+        "인센티브 적용 시 월 40만원"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-parental-leave-full",
+      "programId": "parental-leave-full",
+      "requirements": [
+        "근로자에게 육아휴직을 30일 이상 허용",
+        "우선지원대상기업"
+      ],
+      "exclusions": [],
+      "notes": [
+        "만 12개월 초과 육아휴직은 월 30만원"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-employment-maintenance",
+      "programId": "employment-maintenance",
+      "requirements": [
+        "경영 사정 악화로 고용조정이 불가피한 상황",
+        "휴업 또는 휴직 실시",
+        "해당 기간 근로자에게 수당 지급",
+        "고용유지조치 기간과 그 후 1개월까지 이직 제한"
+      ],
+      "exclusions": [],
+      "notes": [
+        "휴직수당은 피보험자당 1일 68,100원 한도"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-unpaid-leave",
+      "programId": "unpaid-leave",
+      "requirements": [
+        "경영 사정 악화로 고용조정이 불가피한 상황",
+        "무급휴업·휴직 고용유지조치계획 승인",
+        "심사위원회 심사 통과"
+      ],
+      "exclusions": [],
+      "notes": [
+        "고용유지조치 30일 전까지 계획서 제출 필요"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-youth-employment",
+      "programId": "youth-employment",
+      "requirements": [
+        "직전 1년 평균 피보험자 수 5인 이상(일부 업종·지역은 1인 이상 가능)",
+        "청년을 정규직으로 채용하고 고용보험 가입",
+        "주 28시간 이상 근로, 최저임금 이상, 평균 월 급여 450만원 이하",
+        "채용 후 6개월 이상 고용유지"
+      ],
+      "exclusions": [],
+      "notes": [
+        "지원한도는 기준 피보험자 수의 50%까지"
+      ],
+      "followUpQuestionIds": [
+        "youth-employment.targetYouth",
+        "youth-employment.regularEmployment",
+        "youth-employment.hours",
+        "youth-employment.maintainSixMonths"
+      ]
+    },
+    {
+      "id": "rule-elderly-employment",
+      "programId": "elderly-employment",
+      "requirements": [
+        "신청 분기 월평균 고령자 수 증가",
+        "60세 이상이며 피보험자격 취득기간 1년 초과",
+        "우선지원대상기업·중견기업·사회적기업"
+      ],
+      "exclusions": [],
+      "notes": [
+        "월평균 피보험자 수의 30% 한도, 10명 미만은 3명 한도"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-continued-employment",
+      "programId": "continued-employment",
+      "requirements": [
+        "정년제도를 1년 이상 운영",
+        "취업규칙·단체협약 등에 계속고용제도 명시",
+        "2019년 1월 1일 이후 계속고용제도 도입·시행",
+        "직전 연도 60세 이상 피보험자 비율 30% 이하",
+        "시행일로부터 5년 이내 정년에 도달한 근로자를 계속고용"
+      ],
+      "exclusions": [
+        "대기업, 공공기관, 지방공기업",
+        "중소기업인력지원 특별법 시행령상 제외 업종",
+        "임금체불 명단 공개, 보험료 체납, 중대산업재해 공표 사업주"
+      ],
+      "notes": [
+        "재고용형은 정년 도달 다음날부터 6개월 이내, 1년 이상 근로계약 체결 필요",
+        "분기 매월 말 피보험자 수 평균의 30%, 최대 30명 한도",
+        "2026년부터 비수도권 사업주는 분기 120만원으로 인상"
+      ],
+      "followUpQuestionIds": [
+        "continued-employment.retirementPolicy",
+        "continued-employment.formalPolicy",
+        "continued-employment.ratioCheck",
+        "continued-employment.targetWorker"
+      ]
+    },
+    {
+      "id": "rule-daycare-center",
+      "programId": "daycare-center",
+      "requirements": [
+        "고용보험 가입 사업장",
+        "인가받은 직장어린이집 설치·운영",
+        "보육교직원 자격을 가진 원장과 보육교사 고용"
+      ],
+      "exclusions": [],
+      "notes": [
+        "보육교사 인건비는 기업 규모와 근무시간에 따라 월 30만~138만원",
+        "운영비는 보육현원에 따라 월 200만~520만원"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-daycare-installation",
+      "programId": "daycare-installation",
+      "requirements": [
+        "고용보험 가입 사업장의 사업주 또는 사업주 단체",
+        "직장어린이집 설치 또는 설치·운영 계획"
+      ],
+      "exclusions": [],
+      "notes": [
+        "교재교구비는 5천만원, 우선지원대상기업은 7천만원 한도",
+        "우선지원대상기업은 시설 임차비도 소요비용의 80%, 연 3억원 한도 지원"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-elderly-facility",
+      "programId": "elderly-facility",
+      "requirements": [
+        "고령자 친화적 시설 또는 장비 설치·개선·교체·구입",
+        "융자금 1억원당 1명의 (준)고령자 신규 고용 조건"
+      ],
+      "exclusions": [
+        "퇴직 후 6개월 이내 재고용자는 신규고용인원 불인정"
+      ],
+      "notes": [
+        "시설비용 융자"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-disability-employment",
+      "programId": "disability-employment",
+      "requirements": [
+        "의무고용률 초과 장애인 고용",
+        "장애인 근로자 2인 이상 고용 시부터 지원",
+        "해당 근로자가 최저임금 이상 또는 적용제외 인가 대상"
+      ],
+      "exclusions": [],
+      "notes": [
+        "중증 여부와 성별에 따라 차등"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-disability-new-hire",
+      "programId": "disability-new-hire",
+      "requirements": [
+        "상시근로자 수 5인 이상 50인 미만",
+        "2022년 1월 1일 이후 장애인 근로자 신규 고용",
+        "6개월 이상 고용 유지"
+      ],
+      "exclusions": [
+        "타 지원금과 중복될 경우 차감 지급, 동일·초과 시 미지급"
+      ],
+      "notes": [
+        "중증도와 성별에 따라 차등"
+      ],
+      "followUpQuestionIds": []
+    },
+    {
+      "id": "rule-regional-employment",
+      "programId": "regional-employment",
+      "requirements": [
+        "고용위기지역 이전·신설·증설에 관한 지역고용계획 신고",
+        "계획 신고일로부터 1년 6개월 이내 조업 시작",
+        "해당 지역 3개월 이상 거주한 구직자를 6개월 이상 채용"
+      ],
+      "exclusions": [
+        "주점업, 부동산업, 공공행정 등 일부 제외 업종",
+        "청소년유해업소, 계절적·한시적 사업 등 제외 사업"
+      ],
+      "notes": [
+        "원칙적으로 1,000만원 이상 물적투자가 있어야 이전·신설·증설로 인정",
+        "1일 상한액 6.6만원"
+      ],
+      "followUpQuestionIds": [
+        "regional-employment.planReported",
+        "regional-employment.projectType",
+        "regional-employment.localResident",
+        "regional-employment.maintainSixMonths"
+      ]
+    },
+    {
+      "id": "rule-regular-conversion",
+      "programId": "regular-conversion",
+      "requirements": [
+        "6개월 이상 근속한 기간제·파견·사내하도급 근로자 또는 노무제공자",
+        "5인 이상 30인 미만 기업",
+        "정규직 전환 또는 직접고용",
+        "전환 후 1개월 이상 고용"
+      ],
+      "exclusions": [],
+      "notes": [
+        "직전년도 말 피보험자 수의 30% 한도(5인 이상 10인 미만은 3명)",
+        "사업 참여 신청이 필요 없는 요건형 지원"
+      ],
+      "followUpQuestionIds": [
+        "regular-conversion.tenureSixMonths",
+        "regular-conversion.formalConversion",
+        "regular-conversion.maintainOneMonth",
+        "regular-conversion.wageIncrease"
+      ]
+    }
+  ],
+  "subsidy_exclusion": [
+    {
+      "id": "exclusion-employment-promotion-1",
+      "programId": "employment-promotion",
+      "text": "근로계약기간의 정함이 있는 근로자(예외 제외)"
+    },
+    {
+      "id": "exclusion-employment-promotion-2",
+      "programId": "employment-promotion",
+      "text": "월평균 보수 124만원 미만 근로자"
+    },
+    {
+      "id": "exclusion-employment-promotion-3",
+      "programId": "employment-promotion",
+      "text": "사업주 배우자 및 직계 존비속"
+    },
+    {
+      "id": "exclusion-employment-promotion-4",
+      "programId": "employment-promotion",
+      "text": "임금체불 명단 공개 또는 중대산업재해 공표 사업주"
+    },
+    {
+      "id": "exclusion-work-life-balance-1",
+      "programId": "work-life-balance",
+      "text": "월평균 보수 124만원 미만 근로자"
+    },
+    {
+      "id": "exclusion-work-life-balance-2",
+      "programId": "work-life-balance",
+      "text": "사업주 배우자 및 직계 존비속"
+    },
+    {
+      "id": "exclusion-work-life-balance-3",
+      "programId": "work-life-balance",
+      "text": "고용보험 미가입 근로자"
+    },
+    {
+      "id": "exclusion-work-life-45-1",
+      "programId": "work-life-45",
+      "text": "실근로시간 단축 전 주 30시간 미만 근로자 비중이 50% 초과하는 사업장"
+    },
+    {
+      "id": "exclusion-flexible-work-1",
+      "programId": "flexible-work",
+      "text": "동일 품목으로 다른 법령에 따른 시스템·시설 지원을 받는 경우"
+    },
+    {
+      "id": "exclusion-continued-employment-1",
+      "programId": "continued-employment",
+      "text": "대기업, 공공기관, 지방공기업"
+    },
+    {
+      "id": "exclusion-continued-employment-2",
+      "programId": "continued-employment",
+      "text": "중소기업인력지원 특별법 시행령상 제외 업종"
+    },
+    {
+      "id": "exclusion-continued-employment-3",
+      "programId": "continued-employment",
+      "text": "임금체불 명단 공개, 보험료 체납, 중대산업재해 공표 사업주"
+    },
+    {
+      "id": "exclusion-elderly-facility-1",
+      "programId": "elderly-facility",
+      "text": "퇴직 후 6개월 이내 재고용자는 신규고용인원 불인정"
+    },
+    {
+      "id": "exclusion-disability-new-hire-1",
+      "programId": "disability-new-hire",
+      "text": "타 지원금과 중복될 경우 차감 지급, 동일·초과 시 미지급"
+    },
+    {
+      "id": "exclusion-regional-employment-1",
+      "programId": "regional-employment",
+      "text": "주점업, 부동산업, 공공행정 등 일부 제외 업종"
+    },
+    {
+      "id": "exclusion-regional-employment-2",
+      "programId": "regional-employment",
+      "text": "청소년유해업소, 계절적·한시적 사업 등 제외 사업"
+    }
+  ],
+  "subsidy_source_document": [
+    {
+      "id": "doc-2026-subsidy-guide",
+      "title": "2026 고용장려금 지원제도",
+      "issuer": "고용노동부",
+      "기준일": "2026-01-01",
+      "publishedAt": "2026-01-01",
+      "fileName": "2026 고용장려금 지원제도.pdf",
+      "priority": 2
+    },
+    {
+      "id": "doc-2026-continued-employment",
+      "title": "2026년 고령자 계속고용장려금 가이드북",
+      "issuer": "고용노동부",
+      "기준일": "2026-01-01",
+      "publishedAt": "2026-01-01",
+      "fileName": "'26년 고령자 계속고용장려금 가이드북.pdf",
+      "priority": 3
+    },
+    {
+      "id": "doc-winners-review",
+      "title": "2026년도 고용장려금 적합여부검토",
+      "issuer": "노무법인 위너스",
+      "기준일": "2026-01-01",
+      "publishedAt": "2026-01-01",
+      "fileName": "2026년도_고용장려금_적합여부검토_노무법인위너스.pdf",
+      "priority": 1
+    }
+  ],
+  "eligibility_question": [
+    {
+      "id": "companySize",
+      "scope": "common",
+      "prompt": "기업 규모를 선택해주세요",
+      "helper": "고용보험 피보험자 수 기준",
+      "type": "single",
+      "options": [
+        {
+          "value": "우선지원대상기업",
+          "label": "우선지원대상기업"
+        },
+        {
+          "value": "중견기업",
+          "label": "중견기업"
+        },
+        {
+          "value": "대규모기업",
+          "label": "대규모기업"
+        }
+      ]
+    },
+    {
+      "id": "situations",
+      "scope": "common",
+      "prompt": "해당되는 상황을 모두 선택해주세요",
+      "type": "multi",
+      "options": [
+        {
+          "value": "newHire",
+          "label": "취약계층 신규 채용"
+        },
+        {
+          "value": "youthHire",
+          "label": "청년 정규직 채용"
+        },
+        {
+          "value": "elderlyHire",
+          "label": "고령자 계속고용 또는 고용 확대"
+        },
+        {
+          "value": "regularConversion",
+          "label": "비정규직 정규직 전환"
+        },
+        {
+          "value": "regionalExpansion",
+          "label": "고용위기지역 이전·신설·증설"
+        },
+        {
+          "value": "workLifeBalance",
+          "label": "근무혁신·유연근무 도입"
+        },
+        {
+          "value": "parentalLeave",
+          "label": "출산·육아휴직 제도 운영"
+        },
+        {
+          "value": "employmentMaintenance",
+          "label": "경영위기 대응 고용유지"
+        }
+      ]
+    },
+    {
+      "id": "workforceRange",
+      "scope": "common",
+      "prompt": "상시 근로자 수 구간을 알려주세요",
+      "helper": "정규직 전환 지원금은 5인 이상 30인 미만 요건이 중요합니다.",
+      "type": "single",
+      "options": [
+        {
+          "value": "under5",
+          "label": "5인 미만"
+        },
+        {
+          "value": "5to29",
+          "label": "5인 이상 30인 미만"
+        },
+        {
+          "value": "30to99",
+          "label": "30인 이상 100인 미만"
+        },
+        {
+          "value": "over100",
+          "label": "100인 이상"
+        }
+      ]
+    },
+    {
+      "id": "locationType",
+      "scope": "common",
+      "prompt": "사업장 소재지를 선택해주세요",
+      "helper": "고령자 계속고용장려금과 지역고용촉진지원금 판정에 사용됩니다.",
+      "type": "single",
+      "options": [
+        {
+          "value": "metropolitan",
+          "label": "수도권"
+        },
+        {
+          "value": "nonMetropolitan",
+          "label": "비수도권"
+        }
+      ]
+    },
+    {
+      "id": "employment-promotion.jobSeekerRegistration",
+      "scope": "program",
+      "programId": "employment-promotion",
+      "prompt": "채용 대상자가 사전 구직등록 또는 취업지원 이력이 있나요?",
+      "helper": "고용촉진장려금 핵심 선행요건입니다.",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예, 확인 가능"
+        },
+        {
+          "value": "unknown",
+          "label": "아직 확인 전"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "employment-promotion.regularEmployment",
+      "scope": "program",
+      "programId": "employment-promotion",
+      "prompt": "정규직 또는 기간의 정함이 없는 형태로 채용할 예정인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "employment-promotion.maintainSixMonths",
+      "scope": "program",
+      "programId": "employment-promotion",
+      "prompt": "채용 후 6개월 이상 고용 유지가 가능하신가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "운영 계획 확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "어려움"
+        }
+      ]
+    },
+    {
+      "id": "employment-promotion.wageLevel",
+      "scope": "program",
+      "programId": "employment-promotion",
+      "prompt": "예정 월평균 보수가 124만원 이상인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "산정 전"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "youth-employment.targetYouth",
+      "scope": "program",
+      "programId": "youth-employment",
+      "prompt": "채용 대상 청년이 취업애로청년 기준에 해당하나요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "youth-employment.regularEmployment",
+      "scope": "program",
+      "programId": "youth-employment",
+      "prompt": "청년을 정규직으로 채용하고 고용보험 가입 예정인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "youth-employment.hours",
+      "scope": "program",
+      "programId": "youth-employment",
+      "prompt": "주 소정근로시간이 28시간 이상인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "설계 중"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "youth-employment.maintainSixMonths",
+      "scope": "program",
+      "programId": "youth-employment",
+      "prompt": "채용 후 6개월 이상 고용 유지가 가능하신가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "운영 계획 확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "어려움"
+        }
+      ]
+    },
+    {
+      "id": "continued-employment.retirementPolicy",
+      "scope": "program",
+      "programId": "continued-employment",
+      "prompt": "사업장에서 정년제도를 1년 이상 운영했나요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "규정 확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "continued-employment.formalPolicy",
+      "scope": "program",
+      "programId": "continued-employment",
+      "prompt": "취업규칙 또는 단체협약에 계속고용제도를 명시했나요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "needs_update",
+          "label": "개정 예정"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "continued-employment.ratioCheck",
+      "scope": "program",
+      "programId": "continued-employment",
+      "prompt": "직전 연도 60세 이상 피보험자 비율이 30% 이하인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "집계 필요"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "continued-employment.targetWorker",
+      "scope": "program",
+      "programId": "continued-employment",
+      "prompt": "정년 도달 근로자를 실제로 계속고용 또는 재고용할 계획인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "planned",
+          "label": "대상자 확정 전"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "regional-employment.planReported",
+      "scope": "program",
+      "programId": "regional-employment",
+      "prompt": "지역고용계획을 신고했거나 신고할 수 있나요?",
+      "helper": "지역고용촉진지원금 핵심 선행절차입니다.",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "needs_report",
+          "label": "아직 미신고, 준비 가능"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "regional-employment.projectType",
+      "scope": "program",
+      "programId": "regional-employment",
+      "prompt": "고용위기지역으로 이전·신설·증설 중 어떤 형태인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "qualified",
+          "label": "이전·신설·증설에 해당"
+        },
+        {
+          "value": "unknown",
+          "label": "판단 필요"
+        },
+        {
+          "value": "no",
+          "label": "해당 없음"
+        }
+      ]
+    },
+    {
+      "id": "regional-employment.localResident",
+      "scope": "program",
+      "programId": "regional-employment",
+      "prompt": "채용 대상자가 해당 지역에 3개월 이상 거주한 구직자인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "regional-employment.maintainSixMonths",
+      "scope": "program",
+      "programId": "regional-employment",
+      "prompt": "채용 후 6개월 이상 고용 유지가 가능하신가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "운영 계획 확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "어려움"
+        }
+      ]
+    },
+    {
+      "id": "regular-conversion.tenureSixMonths",
+      "scope": "program",
+      "programId": "regular-conversion",
+      "prompt": "전환 대상자가 현재 6개월 이상 근속했나요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "근속기간 확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "regular-conversion.formalConversion",
+      "scope": "program",
+      "programId": "regular-conversion",
+      "prompt": "정규직 전환 또는 직접고용으로 처리할 계획인가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "planned",
+          "label": "검토 중"
+        },
+        {
+          "value": "no",
+          "label": "아니오"
+        }
+      ]
+    },
+    {
+      "id": "regular-conversion.maintainOneMonth",
+      "scope": "program",
+      "programId": "regular-conversion",
+      "prompt": "전환 후 1개월 이상 고용 유지가 가능하신가요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예"
+        },
+        {
+          "value": "unknown",
+          "label": "운영 계획 확인 필요"
+        },
+        {
+          "value": "no",
+          "label": "어려움"
+        }
+      ]
+    },
+    {
+      "id": "regular-conversion.wageIncrease",
+      "scope": "program",
+      "programId": "regular-conversion",
+      "prompt": "전환 후 월평균 임금이 20만원 이상 증가하나요?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "예, 60만원 구간 검토"
+        },
+        {
+          "value": "unknown",
+          "label": "산정 필요"
+        },
+        {
+          "value": "no",
+          "label": "아니오, 40만원 구간 검토"
+        }
+      ]
+    }
+  ],
+  "eligibility_session": [],
+  "consultation_lead": []
+}
