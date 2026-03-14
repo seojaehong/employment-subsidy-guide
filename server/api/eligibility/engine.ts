@@ -74,7 +74,7 @@ function determineEmploymentPromotion(baseAnswers: BaseEligibilityAnswers, answe
   return {
     programId: "employment-promotion",
     status,
-    summary: status === "eligible" ? "현재 확인된 내용 기준으로는 준비를 이어가셔도 괜찮아요." : "방향은 잘 맞고 있어서 몇 가지만 더 확인하면 됩니다.",
+    summary: status === "eligible" ? "현재 확인된 내용 기준으로는 준비를 이어가셔도 괜찮아요." : "몇 가지 조건만 더 확인되면 준비를 이어가기 한결 수월해집니다.",
     rationale,
     missingItems,
     nextActions: ["채용 대상자 요건을 증빙할 자료를 먼저 정리해보세요.", "채용 후 6개월 유지 계획과 임금 기준도 함께 확인해보세요."],
@@ -129,7 +129,7 @@ function determineYouthEmployment(baseAnswers: BaseEligibilityAnswers, answers: 
   return {
     programId: "youth-employment",
     status,
-    summary: status === "eligible" ? "현재 기준으로는 신청 준비를 이어가셔도 괜찮아요." : "채용 방향은 잘 맞고 있어서 몇 가지 세부 조건만 더 보면 됩니다.",
+    summary: status === "eligible" ? "현재 기준으로는 신청 준비를 이어가셔도 괜찮아요." : "몇 가지 세부 조건만 더 확인되면 준비 방향을 더 분명하게 잡을 수 있어요.",
     rationale,
     missingItems,
     nextActions: ["청년 취업애로 기준과 산업단지 입주 여부를 먼저 확인해보세요.", "참여신청 승인 이후 6개월 유지 계획도 함께 정리해두시면 좋아요."],
@@ -169,7 +169,7 @@ function determineContinuedEmployment(baseAnswers: BaseEligibilityAnswers, answe
   return {
     programId: "continued-employment",
     status,
-    summary: status === "eligible" ? "현재 기준으로는 계속 준비를 이어가셔도 괜찮아요." : "제도 방향은 잘 맞고 있어서 규정과 대상자만 더 확인하면 됩니다.",
+    summary: status === "eligible" ? "현재 기준으로는 계속 준비를 이어가셔도 괜찮아요." : "규정과 대상자만 조금 더 확인되면 다음 준비를 이어가기 좋아요.",
     rationale,
     missingItems,
     nextActions: [
@@ -209,7 +209,7 @@ function determineRegionalEmployment(_baseAnswers: BaseEligibilityAnswers, answe
   return {
     programId: "regional-employment",
     status,
-    summary: status === "eligible" ? "현재 기준으로는 신청 준비를 이어가셔도 괜찮아요." : "사업 방향은 맞고 있어서 신고와 거주 요건을 조금 더 확인하면 됩니다.",
+    summary: status === "eligible" ? "현재 기준으로는 신청 준비를 이어가셔도 괜찮아요." : "신고와 거주 요건만 조금 더 확인되면 준비 수준을 더 분명하게 볼 수 있어요.",
     rationale: ["지역고용계획 신고와 지역 거주자 채용 여부가 핵심 기준이에요."],
     missingItems,
     nextActions: ["조업 일정에 맞춰 지역고용계획 신고 여부를 먼저 확정해보세요.", "채용 대상자의 거주기간과 고용유지 계획도 자료로 정리해두시면 좋아요."],

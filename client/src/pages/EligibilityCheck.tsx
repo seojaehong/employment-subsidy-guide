@@ -62,7 +62,7 @@ const resultHeadlines = {
   eligible: "현재 확인된 내용 기준으로는 신청 준비를 이어가셔도 괜찮아요.",
   needs_followup: "몇 가지 사항만 더 확인되면 더 안정적으로 준비를 이어갈 수 있어요.",
   ineligible: "지금 답변 기준으로는 바로 진행하기보다 조건을 한 번 더 살펴보는 편이 좋아요.",
-  manual_review: "자동 판정만으로는 부족해서 몇 가지 내용을 더 확인해보면 좋아요.",
+  manual_review: "현재 답변만으로는 부족해서 몇 가지 내용을 더 확인해보면 좋아요.",
 } as const;
 
 const resultActionTitles = {
@@ -190,10 +190,21 @@ export default function EligibilityCheck() {
 
   const summaryHeadline =
     statusCounts.eligible > 0
-      ? `${statusCounts.eligible}개 제도는 다음 준비를 이어가볼 수 있습니다`
+      ? "지금 바로 이어서 살펴볼 수 있는 제도가 있습니다"
       : statusCounts.needs_followup > 0
-        ? `${statusCounts.needs_followup}개 제도는 조금 더 확인하면 가능성이 열려 있습니다`
-        : "몇 가지 조건을 다시 확인한 뒤 차분히 검토해보는 편이 좋습니다";
+        ? "조금 더 확인하면 이어서 준비할 수 있는 제도가 있습니다"
+        : statusCounts.manual_review > 0
+          ? "현재 정보만으로는 부족해 조금 더 확인이 필요한 제도가 있습니다"
+          : "지금 단계에서는 조건을 한 번 더 확인해보는 편이 좋습니다";
+
+  const summaryGuide =
+    statusCounts.eligible > 0
+      ? "먼저 `신청 가능`과 `조금 더 확인 필요` 제도부터 보시고, 필요한 준비만 차근차근 이어가보세요."
+      : statusCounts.needs_followup > 0
+        ? "보완 항목부터 먼저 챙기면 다음 판단이 훨씬 쉬워집니다."
+        : statusCounts.manual_review > 0
+          ? "자동으로 정리하기 어려운 항목은 현재 운영 방식과 내부 규정을 함께 보며 정리해보시면 좋아요."
+          : "지금 답변과 실제 운영 기준이 같은지 먼저 다시 맞춰보시면 다음 판단이 훨씬 분명해집니다.";
 
   const getEmptyActionCopy = (status: DeterminationResult["status"]) => {
     if (status === "eligible") {
@@ -799,7 +810,7 @@ export default function EligibilityCheck() {
                       </h2>
                       <p className="text-sm max-w-2xl" style={{ color: "rgba(248,250,252,0.68)" }}>
                         결과를 한 번에 이해하실 수 있도록 현재 상태와 이유, 다음 준비 순서를 중심으로 정리했습니다.
-                        먼저 `신청 가능`과 `조금 더 확인 필요` 제도부터 살펴보시고, `조건 다시 확인` 항목은 기준 변화 가능성이 있는지 참고용으로 보시면 좋습니다.
+                        {` ${summaryGuide}`}
                       </p>
                     </div>
 
@@ -946,7 +957,7 @@ export default function EligibilityCheck() {
                             }}
                           >
                             <div className="text-xs font-semibold mb-2" style={{ color: "#6EE7B7" }}>
-                              지금 단계에서는
+                              지금 기준으로는
                             </div>
                             <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.78)" }}>
                               {getEligibleWrapUp(report)}

@@ -717,7 +717,7 @@ function determineEmploymentPromotion(
     summary:
       status === "eligible"
         ? "현재 확인된 내용 기준으로는 준비를 이어가셔도 괜찮아요."
-        : "방향은 잘 맞고 있어서 몇 가지만 더 확인하면 됩니다.",
+        : "몇 가지 조건만 더 확인되면 준비를 이어가기 한결 수월해집니다.",
     rationale,
     missingItems,
     nextActions: [
@@ -785,7 +785,7 @@ function determineYouthEmployment(
     summary:
       status === "eligible"
         ? "현재 기준으로는 신청 준비를 이어가셔도 괜찮아요."
-        : "채용 방향은 잘 맞고 있어서 몇 가지 세부 조건만 더 보면 됩니다.",
+        : "몇 가지 세부 조건만 더 확인되면 준비 방향을 더 분명하게 잡을 수 있어요.",
     rationale,
     missingItems,
     nextActions: [
@@ -839,7 +839,7 @@ function determineContinuedEmployment(
     summary:
       status === "eligible"
         ? "현재 기준으로는 계속 준비를 이어가셔도 괜찮아요."
-        : "제도 방향은 잘 맞고 있어서 규정과 대상자만 더 확인하면 됩니다.",
+        : "규정과 대상자만 조금 더 확인되면 다음 준비를 이어가기 좋아요.",
     rationale,
     missingItems,
     nextActions: [
@@ -889,7 +889,7 @@ function determineRegionalEmployment(
     summary:
       status === "eligible"
         ? "현재 기준으로는 신청 준비를 이어가셔도 괜찮아요."
-        : "사업 방향은 맞고 있어서 신고와 거주 요건을 조금 더 확인하면 됩니다.",
+        : "신고와 거주 요건만 조금 더 확인되면 준비 수준을 더 분명하게 볼 수 있어요.",
     rationale: ["지역고용계획 신고와 지역 거주자 채용 여부가 핵심 기준이에요."],
     missingItems,
     nextActions: [
