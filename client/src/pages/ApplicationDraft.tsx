@@ -124,6 +124,12 @@ export default function ApplicationDraft() {
       .map((programId) => programLookup.get(programId) ?? null)
       .filter(Boolean) as OperationalProgram[];
   }, [programLookup, selectedReports, subsidyIds]);
+  const checklistItems = useMemo(
+    () => Array.from(new Set(selectedReports.flatMap((report) => [...report.missingItems, ...report.nextActions]))),
+    [selectedReports],
+  );
+  const draftReadyCount = selectedReports.filter((report) => report.status === "eligible").length;
+  const followupCount = selectedReports.filter((report) => report.status === "needs_followup").length;
 
   const handleChange = (field: keyof CompanyInfo, value: string) => {
     setInfo((prev) => ({ ...prev, [field]: value }));
@@ -133,7 +139,8 @@ export default function ApplicationDraft() {
     info.companyName.trim() &&
     info.bizNumber.replace(/\D/g, "").length === 10 &&
     info.contactName.trim() &&
-    info.contactPhone.replace(/\D/g, "").length >= 10;
+    info.contactPhone.replace(/\D/g, "").length >= 10 &&
+    selectedPrograms.length > 0;
 
   const today = new Date();
   const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
@@ -143,7 +150,7 @@ export default function ApplicationDraft() {
     const text = previewRef.current.innerText;
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      toast.success("신청서 내용이 클립보드에 복사되었습니다.");
+      toast.success("준비 패키지 내용이 클립보드에 복사되었습니다.");
       setTimeout(() => setCopied(false), 2000);
     });
   };
@@ -198,15 +205,32 @@ export default function ApplicationDraft() {
               }}
             >
               <FileText size={12} />
-              판정 결과 기반 신청서 초안
+              판정 결과 기반 준비 패키지
             </div>
             <h1 className="text-3xl font-black mb-2" style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}>
-              신청서 초안 생성
+              준비 패키지 정리
             </h1>
             <p className="text-sm" style={{ color: "rgba(248,250,252,0.5)" }}>
-              판정 결과에서 진행 가능한 제도만 추려서 초안을 생성합니다.
+              현재 결과에서 바로 준비를 이어갈 수 있는 제도만 추려서 초안, 확인 항목, PDF 저장용 내용을 함께 정리해드립니다.
             </p>
           </motion.div>
+
+          {selectedPrograms.length === 0 && (
+            <div
+              className="p-5 rounded-2xl mb-6"
+              style={{
+                background: "rgba(245,158,11,0.08)",
+                border: "1px solid rgba(245,158,11,0.18)",
+              }}
+            >
+              <div className="text-sm font-bold mb-2" style={{ color: "#FCD34D" }}>
+                아직 준비 패키지로 이어질 제도가 없습니다
+              </div>
+              <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.72)" }}>
+                현재 결과에서 `신청 가능` 또는 `조금 더 확인 필요`로 나온 제도가 있어야 준비 패키지를 만들 수 있습니다. 자격 검토로 돌아가 결과를 다시 확인해보세요.
+              </div>
+            </div>
+          )}
 
           {selectedPrograms.length > 0 && (
             <div
@@ -217,7 +241,7 @@ export default function ApplicationDraft() {
               }}
             >
               <div className="text-xs font-semibold mb-3" style={{ color: "#93C5FD" }}>
-                초안 생성 대상
+                준비 패키지 대상
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedPrograms.map((program) => (
@@ -246,7 +270,7 @@ export default function ApplicationDraft() {
               }}
             >
               <div className="text-xs font-semibold mb-3" style={{ color: "#6EE7B7" }}>
-                판정 리포트 연동
+                현재 결과에서 이어받은 내용
               </div>
               <div className="space-y-2">
                 {selectedReports.map((report) => (
@@ -256,9 +280,73 @@ export default function ApplicationDraft() {
                     </strong>
                     {" · "}
                     {report.summary}
-                    {report.missingItems.length > 0 && ` · 보완: ${report.missingItems.join(", ")}`}
+                    {report.missingItems.length > 0 && ` · 먼저 확인: ${report.missingItems.join(", ")}`}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {checklistItems.length > 0 && (
+            <div
+              className="p-4 rounded-xl mb-6"
+              style={{
+                background: "rgba(14,165,233,0.06)",
+                border: "1px solid rgba(14,165,233,0.15)",
+              }}
+            >
+              <div className="text-xs font-semibold mb-3" style={{ color: "#7DD3FC" }}>
+                먼저 챙겨보면 좋은 항목
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {checklistItems.slice(0, 8).map((item) => (
+                  <span
+                    key={item}
+                    className="text-xs px-2.5 py-1 rounded-full font-medium"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "rgba(248,250,252,0.78)",
+                    }}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedPrograms.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div
+                className="p-4 rounded-2xl"
+                style={{
+                  background: "rgba(16,185,129,0.06)",
+                  border: "1px solid rgba(16,185,129,0.14)",
+                }}
+              >
+                <div className="text-xs font-semibold mb-2" style={{ color: "#6EE7B7" }}>
+                  이 패키지로 바로 정리할 수 있는 것
+                </div>
+                <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.76)" }}>
+                  사업장 정보, 현재 결과 요약, 준비 순서, PDF 저장용 정리본까지 한 번에 묶을 수 있어요.
+                  {draftReadyCount > 0 && ` 현재 기준으로 바로 준비를 이어갈 수 있는 제도는 ${draftReadyCount}건입니다.`}
+                </div>
+              </div>
+              <div
+                className="p-4 rounded-2xl"
+                style={{
+                  background: "rgba(245,158,11,0.06)",
+                  border: "1px solid rgba(245,158,11,0.14)",
+                }}
+              >
+                <div className="text-xs font-semibold mb-2" style={{ color: "#FCD34D" }}>
+                  여전히 직접 확인이 필요한 것
+                </div>
+                <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.76)" }}>
+                  실제 제출 양식, 최신 운영지침, 증빙 자료 적정성은 따로 확인이 필요합니다.
+                  {followupCount > 0 && ` 조금 더 확인이 필요한 제도 ${followupCount}건은 보완 항목을 함께 챙기면서 보시는 편이 좋아요.`}
+                </div>
               </div>
             </div>
           )}
@@ -425,7 +513,7 @@ export default function ApplicationDraft() {
                   }}
                   onClick={() => isFormValid() && setStep("preview")}
                 >
-                  신청서 초안 생성하기
+                  준비 패키지 생성하기
                   <ChevronRight size={18} />
                 </button>
               </motion.div>
@@ -485,7 +573,7 @@ export default function ApplicationDraft() {
                 >
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-black mb-1" style={{ color: "#F8FAFC", letterSpacing: "-0.01em" }}>
-                      고용장려금 신청서 (초안)
+                      고용장려금 준비 패키지
                     </h2>
                     <p className="text-sm" style={{ color: "rgba(248,250,252,0.4)" }}>
                       작성일: {dateStr}
@@ -521,7 +609,7 @@ export default function ApplicationDraft() {
                               </div>
                               {report && (
                                 <div className="text-xs" style={{ color: "rgba(248,250,252,0.55)" }}>
-                                  판정: {report.summary}
+                                  현재 결과: {report.summary}
                                 </div>
                               )}
                             </div>
@@ -560,7 +648,7 @@ export default function ApplicationDraft() {
                   {selectedReports.length > 0 && (
                     <div className="mb-7">
                       <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(248,250,252,0.35)" }}>
-                        판정 결과 반영 사항
+                        결과에서 이어받은 확인 사항
                       </h3>
                       <div className="space-y-4">
                         {selectedReports.map((report) => (
@@ -580,10 +668,23 @@ export default function ApplicationDraft() {
                             </div>
                             {report.missingItems.length > 0 && (
                               <div className="text-xs" style={{ color: "rgba(248,250,252,0.6)" }}>
-                                보완 필요: {report.missingItems.join(", ")}
+                                먼저 확인: {report.missingItems.join(", ")}
                               </div>
                             )}
                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {checklistItems.length > 0 && (
+                    <div className="mb-7">
+                      <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(248,250,252,0.35)" }}>
+                        준비 체크리스트
+                      </h3>
+                      <div className="space-y-2 text-sm" style={{ color: "#F8FAFC" }}>
+                        {checklistItems.map((item) => (
+                          <div key={item}>- {item}</div>
                         ))}
                       </div>
                     </div>
@@ -598,7 +699,7 @@ export default function ApplicationDraft() {
                       lineHeight: "1.7",
                     }}
                   >
-                    본 초안은 판정 결과를 바탕으로 준비용 문안을 정리한 것입니다. 실제 신청 시 관할 고용센터 제출 서식과 최신 운영지침을 함께 확인하세요.
+                    이 패키지는 현재 답변과 판정 결과를 바탕으로 준비용 내용을 먼저 정리한 것입니다. 공식 제출 서식은 아니며, 실제 신청 전에는 관할 고용센터 양식과 최신 운영지침을 함께 확인해 주세요.
                   </div>
                 </div>
               </motion.div>

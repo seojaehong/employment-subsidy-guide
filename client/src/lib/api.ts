@@ -115,6 +115,12 @@ export function fetchAdminDocuments(token: string) {
   });
 }
 
+export function fetchAdminConsultationLeads(token: string) {
+  return request<{ leads: ConsultationLeadRecord[] }>("/api/admin?action=leads", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export function createAdminDocument(
   token: string,
   payload: { title: string; issuer: string; baseDate: string; fileName: string; sourceDocumentId?: string },

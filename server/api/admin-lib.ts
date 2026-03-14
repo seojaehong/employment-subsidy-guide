@@ -1,6 +1,8 @@
 import type {
   AdminRole,
   AdminSession,
+  ConsultationLeadRecord,
+  DeterminationStatus,
   DocumentVersionRecord,
   OperationalProgram,
   OverrideRecord,
@@ -122,6 +124,21 @@ interface PublishEventRow {
   created_at: string;
 }
 
+interface ConsultationLeadRow {
+  id: string;
+  created_at: string;
+  name: string;
+  phone: string;
+  company: string | null;
+  consult_type: string;
+  message: string | null;
+  subsidy_name: string | null;
+  session_id: string | null;
+  interested_program_ids: string[];
+  determination_statuses: Record<string, string>;
+  missing_items: string[];
+}
+
 function slugify(input: string) {
   return input
     .toLowerCase()
@@ -220,6 +237,30 @@ function mapOverride(row: OverrideRow): OverrideRecord {
     authorEmail: row.author_email,
     effectiveFrom: row.effective_from,
     createdAt: row.created_at,
+  };
+}
+
+function mapConsultationLead(row: ConsultationLeadRow): ConsultationLeadRecord {
+  const determinationStatuses = Object.fromEntries(
+    Object.entries(row.determination_statuses ?? {}).map(([programId, status]) => [
+      programId,
+      status as DeterminationStatus,
+    ]),
+  );
+
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    name: row.name,
+    phone: row.phone,
+    company: row.company ?? undefined,
+    consultType: row.consult_type,
+    message: row.message ?? undefined,
+    subsidyName: row.subsidy_name ?? undefined,
+    sessionId: row.session_id ?? undefined,
+    interestedProgramIds: row.interested_program_ids ?? [],
+    determinationStatuses,
+    missingItems: row.missing_items ?? [],
   };
 }
 
@@ -431,6 +472,22 @@ export async function listDocuments() {
     overrides: overrides.map(mapOverride),
     publishEvents,
   };
+}
+
+export async function listConsultationLeads() {
+  try {
+    const leads = await supabaseSelect<ConsultationLeadRow[]>(
+      "consultation_leads",
+      "?select=*&order=created_at.desc&limit=20",
+    );
+
+    return {
+      leads: leads.map(mapConsultationLead),
+    };
+  } catch (error) {
+    console.warn("listConsultationLeads failed", error);
+    return { leads: [] };
+  }
 }
 
 export async function createDocument(input: {

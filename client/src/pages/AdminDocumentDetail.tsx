@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useRoute } from "wouter";
-import type { OverrideRecord, ProgramDraftRecord, QuestionSetVersion, RuleDefinition } from "@shared/subsidy";
+import { determinationStatusGuides, type OverrideRecord, type ProgramDraftRecord, type QuestionSetVersion, type RuleDefinition } from "@shared/subsidy";
 import { clearAdminToken, getAdminToken } from "@/lib/adminAuth";
 import {
   createAdminOverride,
@@ -145,6 +145,22 @@ export default function AdminDocumentDetail() {
             {error}
           </div>
         )}
+
+        <div className="rounded-3xl p-6" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <h2 className="text-lg font-bold mb-4" style={{ color: "#F8FAFC" }}>상태 해석 기준</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            {(Object.keys(determinationStatusGuides) as Array<keyof typeof determinationStatusGuides>).map((status) => (
+              <div key={status} className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="text-xs font-semibold mb-2" style={{ color: "#93C5FD" }}>
+                  {determinationStatusGuides[status].label}
+                </div>
+                <div className="text-xs leading-relaxed" style={{ color: "rgba(248,250,252,0.58)" }}>
+                  {determinationStatusGuides[status].description}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[0.9fr,1.1fr] gap-6">
           <div className="space-y-6">

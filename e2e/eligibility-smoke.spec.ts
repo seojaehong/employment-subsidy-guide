@@ -67,6 +67,32 @@ test.describe("eligibility smoke", () => {
     await expect(page.getByRole("heading", { name: "운영 콘솔 로그인" })).toBeVisible();
   });
 
+  test("prepare package route opens from an eligible result context", async ({ request, page, baseURL }) => {
+    const { createJson, determineJson } = await createAndDetermine(request, baseURL!, {
+      baseAnswers: {
+        companySize: "우선지원대상기업",
+        workforceRange: "30to99",
+        locationType: "metropolitan",
+        situations: ["newHire"],
+      },
+      followUpAnswers: {
+        "employment-promotion.jobSeekerRegistration": "yes",
+        "employment-promotion.regularEmployment": "yes",
+        "employment-promotion.maintainSixMonths": "yes",
+        "employment-promotion.wageLevel": "yes",
+      },
+    });
+
+    const report = getReport(determineJson, "employment-promotion");
+    expect(report.canGenerateDraft).toBe(true);
+
+    await page.goto(
+      `${baseURL}/prepare?session=${encodeURIComponent(createJson.session.id)}&subsidies=employment-promotion`,
+    );
+    await expect(page.getByRole("heading", { name: "준비 패키지 정리" })).toBeVisible();
+    await expect(page.getByText("판정 결과 기반 준비 패키지")).toBeVisible();
+  });
+
   test("regional employment journey persists in Supabase and returns needs-followup", async ({ request, baseURL }) => {
     const { createJson, determineJson } = await createAndDetermine(request, baseURL!, {
       baseAnswers: {

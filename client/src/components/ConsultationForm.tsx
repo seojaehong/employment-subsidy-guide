@@ -101,6 +101,21 @@ export default function ConsultationForm({ subsidyName, context, programNames }:
     return `${unique.slice(0, 3).join(", ")} 외 ${unique.length - 3}개`;
   }, [missingItems]);
   const missingItemBadges = useMemo(() => Array.from(new Set(missingItems)).slice(0, 4), [missingItems]);
+  const nextStepMessages = useMemo(() => {
+    if (missingItems.length > 0) {
+      return [
+        "현재 결과와 보완 항목을 먼저 함께 검토합니다.",
+        "가장 먼저 확인할 자료와 순서를 정리해 안내드립니다.",
+        "필요하면 준비 패키지나 실제 신청 단계까지 이어서 도와드립니다.",
+      ];
+    }
+
+    return [
+      "현재 결과를 기준으로 실제 준비 순서를 먼저 정리합니다.",
+      "신청 일정과 챙길 서류를 간단히 나눠서 안내드립니다.",
+      "필요하면 다음 단계 상담이나 서류 준비까지 이어서 도와드립니다.",
+    ];
+  }, [missingItems]);
 
   const handleChange = (field: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -552,6 +567,46 @@ export default function ConsultationForm({ subsidyName, context, programNames }:
                 영업일 기준 1~2일 내에 <strong style={{ color: "#F8FAFC" }}>{form.phone}</strong>로
                 편하게 안내드리겠습니다.
               </p>
+              <div
+                className="mt-5 p-4 rounded-2xl text-left"
+                style={{
+                  background: "rgba(59,130,246,0.08)",
+                  border: "1px solid rgba(59,130,246,0.16)",
+                }}
+              >
+                <div className="text-xs font-semibold mb-3" style={{ color: "#93C5FD" }}>
+                  접수 후에는 이렇게 이어집니다
+                </div>
+                <div className="space-y-2">
+                  {nextStepMessages.map((item) => (
+                    <div key={item} className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.74)" }}>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                {missingItems.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-[11px] font-semibold mb-2" style={{ color: "#FCD34D" }}>
+                      먼저 같이 볼 항목
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {missingItemBadges.map((item) => (
+                        <div
+                          key={item}
+                          className="px-3 py-1.5 rounded-full text-xs"
+                          style={{
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            color: "rgba(248,250,252,0.82)",
+                          }}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

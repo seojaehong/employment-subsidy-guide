@@ -4,6 +4,7 @@ import {
   createDocument,
   createOverride,
   getDocumentDetail,
+  listConsultationLeads,
   listDocuments,
   loginAdmin,
   publishDocument,
@@ -53,6 +54,12 @@ export default async function handler(req: any, res: any) {
         }>(req);
         return res.status(201).json(await createDocument({ ...body, createdByEmail: session.email }));
       }
+      return res.status(405).json({ message: "Method not allowed" });
+    }
+
+    if (action === "leads") {
+      await requireAdminSession(req, "editor");
+      if (req.method === "GET") return res.status(200).json(await listConsultationLeads());
       return res.status(405).json({ message: "Method not allowed" });
     }
 

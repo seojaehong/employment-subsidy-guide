@@ -25,6 +25,7 @@ import type {
   RecommendationRecord,
 } from "@shared/subsidy";
 import {
+  determinationStatusGuides as statusGuides,
   determinePrograms,
   getCommonEligibilityQuestions,
   getProgramFollowUpQuestions,
@@ -140,6 +141,7 @@ export default function EligibilityCheck() {
   const applicableReports = reports.filter(
     (report) => report.status === "eligible" || report.status === "needs_followup",
   );
+  const draftReadyReports = applicableReports.filter((report) => report.canGenerateDraft);
 
   const determinationStatuses = Object.fromEntries(
     reports.map((report) => [report.programId, report.status]),
@@ -147,21 +149,6 @@ export default function EligibilityCheck() {
 
   const missingItems = Array.from(
     new Set(reports.flatMap((report) => report.missingItems)),
-  );
-
-  const selectedProgramIds = applicableReports.map((report) => report.programId);
-
-  const consultationProgramNames = useMemo(
-    () =>
-      Object.fromEntries(
-        selectedProgramIds
-          .map((programId) => {
-            const name = programLookup.get(programId)?.program.name;
-            return name ? ([programId, name] as const) : null;
-          })
-          .filter(Boolean) as Array<readonly [string, string]>,
-      ),
-    [programLookup, selectedProgramIds],
   );
 
   const statusCounts = reports.reduce(
@@ -266,6 +253,28 @@ export default function EligibilityCheck() {
   const programLookup = useMemo(() => {
     return new Map(programs.map((program) => [program.program.legacyId, program]));
   }, [programs]);
+
+  const selectedProgramIds = applicableReports.map((report) => report.programId);
+  const draftReadyProgramIds = draftReadyReports.map((report) => report.programId);
+
+  const consultationProgramNames = useMemo(
+    () =>
+      Object.fromEntries(
+        selectedProgramIds
+          .map((programId) => {
+            const name = programLookup.get(programId)?.program.name;
+            return name ? ([programId, name] as const) : null;
+          })
+          .filter(Boolean) as Array<readonly [string, string]>,
+      ),
+    [programLookup, selectedProgramIds],
+  );
+  const preparePackageHref =
+    draftReadyProgramIds.length > 0
+      ? `/prepare?session=${encodeURIComponent(sessionId ?? "")}&subsidies=${encodeURIComponent(
+          draftReadyProgramIds.join(","),
+        )}`
+      : null;
 
   const buildLocalSessionPayload = (baseAnswers: BaseEligibilityAnswers): SessionCreateResponse => {
     const recommendations = recommendProgramIds(baseAnswers);
@@ -892,6 +901,38 @@ export default function EligibilityCheck() {
                   </div>
                 )}
 
+                <div
+                  className="p-5 rounded-2xl mb-8"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-3" style={{ color: "#C4B5FD" }}>
+                    <ShieldCheck size={16} />
+                    <span className="text-sm font-bold">상태는 이렇게 해석해요</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {(Object.keys(statusGuides) as Array<keyof typeof statusGuides>).map((status) => (
+                      <div
+                        key={status}
+                        className="p-4 rounded-xl"
+                        style={{
+                          background: "rgba(255,255,255,0.02)",
+                          border: `1px solid ${resultColors[status].border}`,
+                        }}
+                      >
+                        <div className="text-xs font-semibold mb-2" style={{ color: resultColors[status].text }}>
+                          {statusGuides[status].label}
+                        </div>
+                        <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.72)" }}>
+                          {statusGuides[status].description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-4 mb-8">
                   {sortedReports.map((report) => {
                     const color = report.program
@@ -1028,6 +1069,62 @@ export default function EligibilityCheck() {
                     );
                   })}
                 </div>
+
+                {preparePackageHref ? (
+                  <div
+                    className="p-6 rounded-3xl mb-8"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(14,165,233,0.08))",
+                      border: "1px solid rgba(59,130,246,0.18)",
+                    }}
+                  >
+                    <div className="flex flex-col lg:flex-row gap-5 lg:items-center lg:justify-between">
+                      <div>
+                        <div className="inline-flex items-center gap-2 text-xs font-semibold mb-3" style={{ color: "#93C5FD" }}>
+                          <ClipboardList size={12} />
+                          준비 패키지로 이어서 정리할 수 있어요
+                        </div>
+                        <h3 className="text-xl font-bold mb-2" style={{ color: "#F8FAFC" }}>
+                          현재 결과를 바탕으로 준비용 초안과 확인 항목을 바로 정리해보세요.
+                        </h3>
+                        <p className="text-sm max-w-2xl" style={{ color: "rgba(248,250,252,0.68)" }}>
+                          신청 가능하거나 조금 더 확인이 필요한 제도는 준비 패키지로 이어서 볼 수 있습니다. 공식 제출용 서식은 아니지만, 사업장 정보와 현재 결과를 묶어 PDF로 정리하기에 충분한 수준이에요.
+                        </p>
+                      </div>
+                      <Link href={preparePackageHref}>
+                        <button
+                          data-testid="result-open-prepare-package-button"
+                          className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold transition-all"
+                          style={{
+                            background: "linear-gradient(135deg, #0EA5E9, #2563EB)",
+                            color: "#fff",
+                            boxShadow: "0 0 20px rgba(14,165,233,0.24)",
+                          }}
+                        >
+                          준비 패키지 열기
+                          <ArrowRight size={16} />
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="p-6 rounded-3xl mb-8"
+                    style={{
+                      background: "rgba(245,158,11,0.08)",
+                      border: "1px solid rgba(245,158,11,0.18)",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-3" style={{ color: "#FCD34D" }}>
+                      <ShieldAlert size={16} />
+                      <span className="text-sm font-bold">이 경우에는 상담으로 이어보는 편이 더 정확해요</span>
+                    </div>
+                    <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.72)" }}>
+                      현재 결과는 자동으로 준비 패키지를 만들기보다 실제 운영 방식과 자료를 함께 보며 정리하는 편이 더 안전합니다.
+                      아래 상담 요청에 현재 결과가 함께 전달되니, 우선순위와 다음 순서를 같이 정리받으시면 좋아요.
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row gap-3 mb-10">
                   <button

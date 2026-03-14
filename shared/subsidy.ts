@@ -31,6 +31,35 @@ export type DeterminationStatus =
   | "ineligible"
   | "manual_review";
 
+export interface DeterminationStatusGuide {
+  label: string;
+  description: string;
+  draftReady: boolean;
+}
+
+export const determinationStatusGuides: Record<DeterminationStatus, DeterminationStatusGuide> = {
+  eligible: {
+    label: "신청 가능",
+    description: "현재 답변 기준으로는 준비를 이어가도 무리가 없는 상태입니다.",
+    draftReady: true,
+  },
+  needs_followup: {
+    label: "조금 더 확인 필요",
+    description: "핵심 방향은 맞고 있어 준비 패키지를 만들 수 있지만, 몇 가지 항목은 더 확인해야 합니다.",
+    draftReady: true,
+  },
+  ineligible: {
+    label: "조건 다시 확인",
+    description: "현재 답변과 제도 기준 사이에 차이가 커서, 바로 준비를 시작하기보다 기준부터 다시 맞춰보는 편이 좋습니다.",
+    draftReady: false,
+  },
+  manual_review: {
+    label: "추가 확인 필요",
+    description: "자동 답변만으로는 판단이 부족해 실제 운영 방식과 자료를 함께 보며 정리하는 편이 정확합니다.",
+    draftReady: false,
+  },
+};
+
 export interface SubsidyAmount {
   우선지원대상기업?: string;
   중견기업?: string;

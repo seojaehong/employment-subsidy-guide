@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import type { AdminSession, DocumentVersionRecord, OverrideRecord } from "@shared/subsidy";
+import { determinationStatusGuides, type AdminSession, type ConsultationLeadRecord, type DocumentVersionRecord, type OverrideRecord } from "@shared/subsidy";
 import { clearAdminToken, getAdminToken } from "@/lib/adminAuth";
-import { createAdminDocument, fetchAdminDocuments, fetchAdminSession } from "@/lib/api";
+import { createAdminDocument, fetchAdminConsultationLeads, fetchAdminDocuments, fetchAdminSession } from "@/lib/api";
 
 export default function AdminDashboard() {
   const [, navigate] = useLocation();
   const [session, setSession] = useState<AdminSession | null>(null);
   const [documents, setDocuments] = useState<DocumentVersionRecord[]>([]);
   const [overrides, setOverrides] = useState<OverrideRecord[]>([]);
+  const [leads, setLeads] = useState<ConsultationLeadRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [draftForm, setDraftForm] = useState({
@@ -17,6 +18,31 @@ export default function AdminDashboard() {
     baseDate: "2026-01-01",
     fileName: "",
   });
+
+  const getLeadSummary = (lead: ConsultationLeadRecord) => {
+    const statuses = Object.values(lead.determinationStatuses);
+    if (statuses.length === 0) {
+      return "일반 문의";
+    }
+
+    const counts = statuses.reduce(
+      (acc, status) => {
+        acc[status] += 1;
+        return acc;
+      },
+      {
+        eligible: 0,
+        needs_followup: 0,
+        ineligible: 0,
+        manual_review: 0,
+      } as Record<keyof typeof determinationStatusGuides, number>,
+    );
+
+    return (Object.keys(counts) as Array<keyof typeof counts>)
+      .filter((status) => counts[status] > 0)
+      .map((status) => `${determinationStatusGuides[status].label} ${counts[status]}건`)
+      .join(" · ");
+  };
 
   useEffect(() => {
     const token = getAdminToken();
@@ -27,13 +53,15 @@ export default function AdminDashboard() {
 
     const load = async () => {
       try {
-        const [sessionResponse, documentsResponse] = await Promise.all([
+        const [sessionResponse, documentsResponse, leadsResponse] = await Promise.all([
           fetchAdminSession(token),
           fetchAdminDocuments(token),
+          fetchAdminConsultationLeads(token),
         ]);
         setSession(sessionResponse.session);
         setDocuments(documentsResponse.documents);
         setOverrides(documentsResponse.overrides);
+        setLeads(leadsResponse.leads);
       } catch (loadError) {
         clearAdminToken();
         navigate("/admin/login");
@@ -53,9 +81,13 @@ export default function AdminDashboard() {
     setError(null);
     try {
       await createAdminDocument(token, draftForm);
-      const documentsResponse = await fetchAdminDocuments(token);
+      const [documentsResponse, leadsResponse] = await Promise.all([
+        fetchAdminDocuments(token),
+        fetchAdminConsultationLeads(token),
+      ]);
       setDocuments(documentsResponse.documents);
       setOverrides(documentsResponse.overrides);
+      setLeads(leadsResponse.leads);
       setDraftForm({ title: "", issuer: "고용노동부", baseDate: "2026-01-01", fileName: "" });
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "문서 생성을 실패했습니다.");
@@ -180,6 +212,68 @@ export default function AdminDashboard() {
                 {!loading && overrides.length === 0 && (
                   <div className="text-sm" style={{ color: "rgba(248,250,252,0.45)" }}>
                     아직 override가 없습니다.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-3xl p-6" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold" style={{ color: "#F8FAFC" }}>최근 상담 요청</h2>
+                <div className="text-xs" style={{ color: "rgba(248,250,252,0.45)" }}>{leads.length}건</div>
+              </div>
+              <div className="space-y-3 max-h-[360px] overflow-auto">
+                {leads.map((lead) => {
+                  const statuses = Object.values(lead.determinationStatuses);
+                  return (
+                    <div key={lead.id} className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)" }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold" style={{ color: "#F8FAFC" }}>
+                            {lead.name} · {lead.company ?? "회사명 미입력"}
+                          </div>
+                          <div className="text-xs mt-1" style={{ color: "rgba(248,250,252,0.5)" }}>
+                            {lead.phone} · {lead.consultType}
+                            {lead.subsidyName ? ` · ${lead.subsidyName}` : ""}
+                          </div>
+                        </div>
+                        <div className="text-[11px]" style={{ color: "rgba(248,250,252,0.4)" }}>
+                          {new Date(lead.createdAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+                        </div>
+                      </div>
+                      {statuses.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {(Object.keys(determinationStatusGuides) as Array<keyof typeof determinationStatusGuides>)
+                            .filter((status) => statuses.includes(status))
+                            .map((status) => (
+                            <span
+                              key={`${lead.id}-${status}`}
+                              className="px-2.5 py-1 rounded-full text-[11px] font-medium"
+                              style={{
+                                background: "rgba(255,255,255,0.05)",
+                                border: "1px solid rgba(255,255,255,0.08)",
+                                color: "rgba(248,250,252,0.74)",
+                              }}
+                            >
+                              {determinationStatusGuides[status].label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="text-xs mt-3" style={{ color: "rgba(248,250,252,0.58)" }}>
+                        결과 요약: {getLeadSummary(lead)}
+                      </div>
+                      {lead.missingItems.length > 0 && (
+                        <div className="text-xs mt-3" style={{ color: "rgba(248,250,252,0.56)" }}>
+                          먼저 볼 항목: {lead.missingItems.slice(0, 3).join(", ")}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {!loading && leads.length === 0 && (
+                  <div className="text-sm" style={{ color: "rgba(248,250,252,0.45)" }}>
+                    아직 접수된 상담 요청이 없습니다.
                   </div>
                 )}
               </div>
