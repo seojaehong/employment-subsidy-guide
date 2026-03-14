@@ -47,8 +47,8 @@ const consultTypes = [
 
 const determinationStatusLabels: Record<DeterminationStatus, string> = {
   eligible: "신청 가능",
-  needs_followup: "보완 필요",
-  ineligible: "현재 제외",
+  needs_followup: "조금 더 확인 필요",
+  ineligible: "조건 다시 확인",
   manual_review: "추가 확인 필요",
 };
 
@@ -82,6 +82,21 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
       }),
     [determinationStatuses, programNameLookup],
   );
+  const summaryPreview = useMemo(() => {
+    const unique = Array.from(new Set(statusSummary));
+    if (unique.length === 0) return "결과가 정리되면 함께 전달드릴게요.";
+    if (unique.length === 1) return `${unique[0]} 상태로 정리되어 있어요.`;
+    if (unique.length === 2) return `${unique[0]}, ${unique[1]} 상태로 정리되어 있어요.`;
+    return `${unique.slice(0, 2).join(", ")} 외 ${unique.length - 2}개 결과가 함께 정리되어 있어요.`;
+  }, [statusSummary]);
+  const summaryBadges = useMemo(() => Array.from(new Set(statusSummary)).slice(0, 4), [statusSummary]);
+  const missingItemsPreview = useMemo(() => {
+    const unique = Array.from(new Set(missingItems));
+    if (unique.length === 0) return null;
+    if (unique.length <= 3) return unique.join(", ");
+    return `${unique.slice(0, 3).join(", ")} 외 ${unique.length - 3}개`;
+  }, [missingItems]);
+  const missingItemBadges = useMemo(() => Array.from(new Set(missingItems)).slice(0, 4), [missingItems]);
 
   const handleChange = (field: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -210,12 +225,12 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
         </div>
         <div>
           <h3 className="text-base font-bold" style={{ color: "#F8FAFC" }}>
-            노무법인 위너스 전문가 상담
+            준비 방향 정리 요청
           </h3>
           <p className="text-xs mt-0.5" style={{ color: "rgba(248,250,252,0.45)" }}>
             {subsidyName
-              ? `${subsidyName} 관련 전문 노무사와 1:1 상담`
-              : "판정 결과를 바탕으로 지원금 신청 가능성을 함께 점검합니다."}
+              ? `${subsidyName} 관련 준비 상황을 확인하고 다음 순서를 정리해드립니다.`
+              : "결과를 바탕으로 실제 준비 방향과 다음 순서를 정리해드립니다."}
           </p>
         </div>
         <div
@@ -226,7 +241,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
             color: "#6EE7B7",
           }}
         >
-          무료 상담
+          요약 포함
         </div>
       </div>
 
@@ -250,9 +265,59 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
               >
                 <Database size={14} className="flex-shrink-0 mt-0.5" />
                 <span>
-                  상담 요청은 이메일로 즉시 접수되며, 후속 검토를 위해 판정 요약이 함께 전달됩니다.
-                  {statusSummary.length > 0 && ` 현재 판정 요약: ${statusSummary.join(", ")}`}
+                  요청 내용은 바로 접수되며, 담당자가 확인 포인트를 살펴본 뒤 순서대로 안내드립니다.
                 </span>
+              </div>
+
+              {summaryBadges.length > 0 && (
+                <div className="mb-4">
+                  <div
+                    className="text-[11px] font-semibold mb-2"
+                    style={{ color: "rgba(248,250,252,0.45)" }}
+                  >
+                    현재 확인 결과
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {summaryBadges.map((item) => (
+                      <div
+                        key={item}
+                        className="px-3 py-1.5 rounded-full text-xs"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          color: "rgba(248,250,252,0.78)",
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                  {statusSummary.length > 4 && (
+                    <div className="text-xs mt-2" style={{ color: "rgba(248,250,252,0.5)" }}>
+                      {summaryPreview}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {[
+                  "결과와 확인 포인트 함께 전달",
+                  "연락처만 남겨도 검토 가능",
+                  "우선 챙길 항목부터 순서 정리",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="p-3 rounded-xl text-xs"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      color: "rgba(248,250,252,0.62)",
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
               </div>
 
               {!IS_CONFIGURED && (
@@ -266,7 +331,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                 >
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>
-                    EmailJS 설정이 없어 이메일 전송은 생략됩니다. 접수 알림 연결 상태를 먼저 확인해주세요.
+                    EmailJS 설정이 없어 이메일 전송은 생략됩니다. 운영 전에 접수 알림 연결만 한 번 확인해두시면 좋습니다.
                   </span>
                 </div>
               )}
@@ -318,7 +383,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                   />
                 </div>
                 <div>
-                  <label style={labelStyle}>상담 유형</label>
+                  <label style={labelStyle}>어떤 도움이 필요하신가요?</label>
                   <div className="relative">
                     <select
                       data-testid="consultation-type-select"
@@ -353,8 +418,8 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                   style={{ ...inputStyle, resize: "vertical", minHeight: "80px" }}
                   placeholder={
                     subsidyName
-                      ? `${subsidyName} 관련 문의 내용을 입력해주세요.`
-                      : "판정 결과에서 궁금한 점이나 준비가 필요한 내용을 입력해주세요."
+                      ? `${subsidyName} 관련해 궁금한 점이나 현재 준비 중인 상황을 편하게 적어주세요.`
+                      : "판정 결과에서 궁금한 점, 준비 예정 항목, 신청 일정 등을 편하게 남겨주세요."
                   }
                   value={form.message}
                   onChange={(e) => handleChange("message", e.target.value)}
@@ -363,14 +428,38 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
 
               {missingItems.length > 0 && (
                 <div
-                  className="p-3 rounded-xl mb-4 text-xs"
+                  className="p-3 rounded-xl mb-4"
                   style={{
                     background: "rgba(245,158,11,0.08)",
                     border: "1px solid rgba(245,158,11,0.2)",
-                    color: "#FCD34D",
                   }}
                 >
-                  보완 필요 항목: {missingItems.join(", ")}
+                  <div
+                    className="text-[11px] font-semibold mb-2"
+                    style={{ color: "#FCD34D" }}
+                  >
+                    먼저 확인해보면 좋은 항목
+                  </div>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {missingItemBadges.map((item) => (
+                      <div
+                        key={item}
+                        className="px-3 py-1.5 rounded-full text-xs"
+                        style={{
+                          background: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          color: "rgba(248,250,252,0.82)",
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                  {missingItems.length > 4 && (
+                    <div className="text-xs" style={{ color: "rgba(248,250,252,0.58)" }}>
+                      {missingItemsPreview}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -394,7 +483,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                   className="text-xs leading-relaxed"
                   style={{ color: "rgba(248,250,252,0.5)" }}
                 >
-                  개인정보 수집 및 이용에 동의합니다. 수집된 정보는 상담과 후속 지원금 검토 목적으로만 사용됩니다.
+                  개인정보 수집 및 이용에 동의합니다. 남겨주신 정보는 문의 안내와 후속 지원금 검토 목적으로만 사용됩니다.
                   <span style={{ color: "#60A5FA" }}> (필수)</span>
                 </span>
               </label>
@@ -441,7 +530,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                 ) : (
                   <>
                     <Send size={15} />
-                    상담 신청하기
+                    검토 요청 보내기
                   </>
                 )}
               </button>
@@ -465,13 +554,13 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                 <CheckCircle2 size={32} style={{ color: "#34D399" }} />
               </div>
               <h4 className="text-lg font-bold mb-2" style={{ color: "#F8FAFC" }}>
-                상담 신청 완료
+                요청이 잘 접수되었어요
               </h4>
               <p className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.5)" }}>
                 <strong style={{ color: "#F8FAFC" }}>{form.name}</strong>님, 접수가 완료되었습니다.
                 <br />
                 영업일 기준 1~2일 내에 <strong style={{ color: "#F8FAFC" }}>{form.phone}</strong>로
-                연락드리겠습니다.
+                편하게 안내드리겠습니다.
               </p>
             </motion.div>
           )}

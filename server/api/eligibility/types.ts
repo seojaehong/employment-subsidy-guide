@@ -105,7 +105,7 @@ export function getCommonEligibilityQuestions(): EligibilityQuestionRecord[] {
       id: "workforceRange",
       scope: "common",
       prompt: "상시 근로자 수 구간을 알려주세요",
-      helper: "정규직 전환 지원금은 5인 이상 30인 미만 요건이 중요합니다.",
+      helper: "일부 지원금은 인원 구간에 따라 가능 여부가 달라져요.",
       type: "single",
       options: [
         { value: "under5", label: "5인 미만" },
@@ -118,7 +118,7 @@ export function getCommonEligibilityQuestions(): EligibilityQuestionRecord[] {
       id: "locationType",
       scope: "common",
       prompt: "사업장 소재지를 선택해주세요",
-      helper: "고령자 계속고용장려금과 지역고용촉진지원금 판정에 사용됩니다.",
+      helper: "지역과 금액 구간을 살펴볼 때 함께 참고해요.",
       type: "single",
       options: [
         { value: "metropolitan", label: "수도권" },
@@ -135,7 +135,7 @@ export function getProgramFollowUpQuestions(): EligibilityQuestionRecord[] {
       scope: "program",
       programId: "employment-promotion",
       prompt: "채용 대상자가 사전 구직등록 또는 취업지원 이력이 있나요?",
-      helper: "고용촉진장려금 핵심 선행요건입니다.",
+      helper: "이 항목은 초반에 꼭 확인하는 기준이에요.",
       type: "single",
       options: [{ value: "yes", label: "예, 확인 가능" }, { value: "unknown", label: "아직 확인 전" }, { value: "no", label: "아니오" }],
     },

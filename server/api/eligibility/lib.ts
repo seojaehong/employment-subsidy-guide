@@ -269,7 +269,7 @@ async function determineProgramsWithRules(
       .sort((a, b) => a.priority - b.priority);
 
     let status: DeterminationResult["status"] = "eligible";
-    let summary = "핵심 요건 기준으로 신청 가능성이 있습니다.";
+    let summary = "현재 확인된 내용 기준으로는 준비를 이어가셔도 괜찮아요.";
     const rationale: string[] = [];
     const missingItems: string[] = [];
     const nextActions: string[] = [];
@@ -294,9 +294,9 @@ async function determineProgramsWithRules(
       programId,
       status,
       summary,
-      rationale: Array.from(new Set(rationale.length > 0 ? rationale : ["DB 규칙 기반 판정 결과입니다."])),
+      rationale: Array.from(new Set(rationale.length > 0 ? rationale : ["현재 공개된 기준을 바탕으로 먼저 정리한 결과예요."])),
       missingItems: Array.from(new Set(missingItems)),
-      nextActions: Array.from(new Set(nextActions.length > 0 ? nextActions : ["전문가 상담으로 세부 요건을 점검하세요."])),
+      nextActions: Array.from(new Set(nextActions.length > 0 ? nextActions : ["실제 신청 전에 세부 요건과 준비 서류를 한 번 더 확인해보세요."])),
       canGenerateDraft: status === "eligible" || status === "needs_followup",
     } satisfies DeterminationResult;
   });

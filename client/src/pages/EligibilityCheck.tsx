@@ -2,15 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  AlertTriangle,
   ArrowRight,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   FileText,
+  ListChecks,
+  ShieldAlert,
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Target,
 } from "lucide-react";
 import type {
   BaseEligibilityAnswers,
@@ -49,9 +53,23 @@ interface SessionCreateResponse {
 
 const resultLabels = {
   eligible: "신청 가능",
-  needs_followup: "보완 필요",
-  ineligible: "현재 제외",
+  needs_followup: "조금 더 확인 필요",
+  ineligible: "조건 다시 확인",
   manual_review: "추가 확인 필요",
+} as const;
+
+const resultHeadlines = {
+  eligible: "현재 확인된 내용 기준으로는 신청 준비를 이어가셔도 괜찮아요.",
+  needs_followup: "몇 가지 사항만 더 확인되면 더 안정적으로 준비를 이어갈 수 있어요.",
+  ineligible: "지금 답변 기준으로는 바로 진행하기보다 조건을 한 번 더 살펴보는 편이 좋아요.",
+  manual_review: "자동 판정만으로는 부족해서 몇 가지 내용을 더 확인해보면 좋아요.",
+} as const;
+
+const resultActionTitles = {
+  eligible: "준비해두면 좋아요",
+  needs_followup: "먼저 확인해보세요",
+  ineligible: "다시 확인해보세요",
+  manual_review: "추가로 확인해보면 좋은 항목",
 } as const;
 
 const resultColors = {
@@ -132,6 +150,53 @@ export default function EligibilityCheck() {
   );
 
   const selectedProgramIds = applicableReports.map((report) => report.programId);
+
+  const statusCounts = reports.reduce(
+    (acc, report) => {
+      acc[report.status] += 1;
+      return acc;
+    },
+    {
+      eligible: 0,
+      needs_followup: 0,
+      ineligible: 0,
+      manual_review: 0,
+    } as Record<DeterminationResult["status"], number>,
+  );
+
+  const sortedReports = [...reports].sort((a, b) => {
+    const priority = {
+      eligible: 0,
+      needs_followup: 1,
+      manual_review: 2,
+      ineligible: 3,
+    } as const;
+
+    return priority[a.status] - priority[b.status];
+  });
+
+  const summaryHeadline =
+    statusCounts.eligible > 0
+      ? `${statusCounts.eligible}개 제도는 다음 준비를 이어가볼 수 있습니다`
+      : statusCounts.needs_followup > 0
+        ? `${statusCounts.needs_followup}개 제도는 조금 더 확인하면 가능성이 열려 있습니다`
+        : "몇 가지 조건을 다시 확인한 뒤 차분히 검토해보는 편이 좋습니다";
+
+  const getEmptyActionCopy = (status: DeterminationResult["status"]) => {
+    if (status === "eligible") {
+      return "현재 기준으로는 별도 보완 없이 신청 준비를 차근차근 진행하셔도 괜찮아요.";
+    }
+
+    if (status === "needs_followup") {
+      return "큰 보완 항목은 보이지 않지만, 신청 전 세부 기준은 한 번 더 점검해보시면 좋아요.";
+    }
+
+    if (status === "manual_review") {
+      return "추가 확인이 필요한 부분은 실제 인력 현황과 내부 규정을 함께 보며 정리해보시면 좋아요.";
+    }
+
+    return "지금 답변과 실제 운영 기준이 같은지 한 번 더 확인해보시면 다음 판단에 도움이 돼요.";
+  };
 
   const handleAnswer = (question: EligibilityQuestionRecord, value: string) => {
     setError(null);
@@ -345,14 +410,33 @@ export default function EligibilityCheck() {
               }}
             >
               <Sparkles size={12} />
-              추천 + 판정 혼합형 자격 검토
+              질문에 답하면 준비 방향을 안내해드려요
             </div>
             <h1 className="text-3xl font-black mb-3" style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}>
               고용장려금 자격 검토
             </h1>
             <p className="text-sm" style={{ color: "rgba(248,250,252,0.5)" }}>
-              1단계에서 후보 제도를 압축하고, 2단계에서 핵심 요건을 추가 확인해 판정 리포트를 제공합니다.
+              먼저 가능성이 있는 제도를 좁혀보고, 이어서 꼭 필요한 요건을 확인해 이해하기 쉬운 결과로 안내해드립니다.
             </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {[
+                "3분 안팎으로 1차 확인",
+                "회원가입 없이 바로 진행",
+                "보완 포인트까지 함께 안내",
+              ].map((item) => (
+                <span
+                  key={item}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "rgba(248,250,252,0.62)",
+                  }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
 
           {error && (
@@ -379,7 +463,7 @@ export default function EligibilityCheck() {
               >
                 <div className="mb-8">
                   <div className="flex justify-between text-xs mb-2" style={{ color: "rgba(248,250,252,0.4)" }}>
-                    <span>1단계 추천 질문 {commonStepIndex + 1} / {commonQuestions.length}</span>
+                    <span>1단계 기본 확인 {commonStepIndex + 1} / {commonQuestions.length}</span>
                     <span>{Math.round(((commonStepIndex + 1) / commonQuestions.length) * 100)}%</span>
                   </div>
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
@@ -448,7 +532,7 @@ export default function EligibilityCheck() {
                     }}
                     disabled={!canProceedCommon || loading}
                   >
-                    {commonStepIndex === commonQuestions.length - 1 ? "후보 제도 찾기" : "다음"}
+                    {commonStepIndex === commonQuestions.length - 1 ? "가능한 지원금 살펴보기" : "다음"}
                     <ChevronRight size={16} />
                   </button>
                 </div>
@@ -473,7 +557,7 @@ export default function EligibilityCheck() {
                   >
                     <div className="flex items-center gap-2 mb-4" style={{ color: "#93C5FD" }}>
                       <ShieldCheck size={16} />
-                      <span className="text-sm font-bold">후보 제도</span>
+                      <span className="text-sm font-bold">살펴볼 지원금</span>
                     </div>
                     <div className="space-y-3">
                       {recommendedPrograms.map((program) => {
@@ -512,13 +596,13 @@ export default function EligibilityCheck() {
                     >
                       <div className="flex items-center gap-2 mb-2" style={{ color: "#6EE7B7" }}>
                         <ClipboardList size={16} />
-                        <span className="text-sm font-bold">2단계 판정 질문</span>
+                        <span className="text-sm font-bold">2단계 추가 확인</span>
                       </div>
                       <h2 className="text-xl font-bold mb-2" style={{ color: "#F8FAFC" }}>
-                        후보 제도의 핵심 요건을 확인합니다
+                        지원금별로 필요한 내용을 조금 더 확인할게요
                       </h2>
                       <p className="text-sm" style={{ color: "rgba(248,250,252,0.5)" }}>
-                        아래 질문에 답하면 `신청 가능`, `보완 필요`, `현재 제외`, `추가 확인 필요` 상태로 정리됩니다.
+                        아래 질문에 답해주시면 현재 준비 정도를 기준으로 `신청 가능`, `조금 더 확인 필요`, `조건 다시 확인`, `추가 확인 필요` 상태로 차분히 정리해드립니다.
                       </p>
                     </div>
 
@@ -531,7 +615,7 @@ export default function EligibilityCheck() {
                           color: "rgba(248,250,252,0.72)",
                         }}
                       >
-                        추가 질문이 없는 후보 제도입니다. 바로 판정 리포트를 생성해도 됩니다.
+                        추가로 확인할 질문이 많지 않은 제도입니다. 지금 바로 결과를 정리해보셔도 됩니다.
                       </div>
                     )}
 
@@ -607,7 +691,7 @@ export default function EligibilityCheck() {
                         disabled={(hasFollowUpQuestions && !canSubmitFollowUp) || loading}
                         onClick={() => void submitDetermination()}
                       >
-                        판정 리포트 생성
+                        결과 확인하기
                         <FileText size={16} />
                       </button>
                     </div>
@@ -623,38 +707,127 @@ export default function EligibilityCheck() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
               >
-                <div className="text-center mb-10">
-                  <div
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
-                    style={{
-                      background: "rgba(16,185,129,0.12)",
-                      border: "1px solid rgba(16,185,129,0.3)",
-                      color: "#6EE7B7",
-                    }}
-                  >
-                    <CheckCircle2 size={12} />
-                    판정 완료
+                <div
+                  className="p-6 md:p-7 rounded-3xl mb-8"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(16,185,129,0.08))",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="flex flex-col lg:flex-row gap-6 lg:items-end lg:justify-between">
+                    <div>
+                      <div
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+                        style={{
+                          background: "rgba(255,255,255,0.08)",
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          color: "#D1FAE5",
+                        }}
+                      >
+                        <CheckCircle2 size={12} />
+                        확인 완료
+                      </div>
+                      <h2
+                        className="text-3xl font-black mb-3"
+                        style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}
+                      >
+                        {summaryHeadline}
+                      </h2>
+                      <p className="text-sm max-w-2xl" style={{ color: "rgba(248,250,252,0.68)" }}>
+                        결과를 한 번에 이해하실 수 있도록 현재 상태와 이유, 다음 준비 순서를 중심으로 정리했습니다.
+                        먼저 `신청 가능`과 `조금 더 확인 필요` 제도부터 살펴보시고, `조건 다시 확인` 항목은 기준 변화 가능성이 있는지 참고용으로 보시면 좋습니다.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 min-w-full lg:min-w-[420px]">
+                      {[
+                        {
+                          label: resultLabels.eligible,
+                          value: statusCounts.eligible,
+                          icon: <CheckCircle2 size={15} />,
+                          color: resultColors.eligible,
+                        },
+                        {
+                          label: resultLabels.needs_followup,
+                          value: statusCounts.needs_followup,
+                          icon: <ListChecks size={15} />,
+                          color: resultColors.needs_followup,
+                        },
+                        {
+                          label: resultLabels.manual_review,
+                          value: statusCounts.manual_review,
+                          icon: <ShieldAlert size={15} />,
+                          color: resultColors.manual_review,
+                        },
+                        {
+                          label: resultLabels.ineligible,
+                          value: statusCounts.ineligible,
+                          icon: <AlertTriangle size={15} />,
+                          color: resultColors.ineligible,
+                        },
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          className="p-4 rounded-2xl"
+                          style={{
+                            background: item.color.bg,
+                            border: `1px solid ${item.color.border}`,
+                          }}
+                        >
+                          <div className="flex items-center justify-between mb-3" style={{ color: item.color.text }}>
+                            {item.icon}
+                            <span className="text-xs font-semibold">{item.label}</span>
+                          </div>
+                          <div className="text-2xl font-black" style={{ color: "#F8FAFC" }}>
+                            {item.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <h2 className="text-3xl font-black mb-3" style={{ color: "#F8FAFC", letterSpacing: "-0.02em" }}>
-                    {applicableReports.length > 0
-                      ? `${applicableReports.length}개 제도가 다음 단계 진행 가능`
-                      : "추가 확인이 필요한 상태입니다"}
-                  </h2>
-                  <p className="text-sm" style={{ color: "rgba(248,250,252,0.5)" }}>
-                    판정 상태와 근거, 보완 항목, 다음 행동을 기준으로 실무 준비를 진행하세요.
-                  </p>
                 </div>
 
+                {missingItems.length > 0 && (
+                  <div
+                    className="p-5 rounded-2xl mb-8"
+                    style={{
+                      background: "rgba(245,158,11,0.08)",
+                      border: "1px solid rgba(245,158,11,0.18)",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-3" style={{ color: "#FCD34D" }}>
+                      <Target size={16} />
+                      <span className="text-sm font-bold">이번 결과에서 먼저 챙겨보면 좋은 포인트</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {missingItems.slice(0, 6).map((item) => (
+                        <span
+                          key={item}
+                          className="px-3 py-1.5 rounded-full text-xs font-medium"
+                          style={{
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            color: "rgba(248,250,252,0.78)",
+                          }}
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-4 mb-8">
-                  {reports.map((report) => {
+                  {sortedReports.map((report) => {
                     const color = report.program
                       ? categoryColors[report.program.program.category]
                       : { text: "#93C5FD", bg: "rgba(59,130,246,0.08)", border: "rgba(59,130,246,0.18)" };
                     const statusTheme = resultColors[report.status];
+                    const actionItems = report.missingItems.length > 0 ? report.missingItems : report.nextActions;
                     return (
                       <div
                         key={report.programId}
-                        className="p-6 rounded-2xl"
+                        className="p-6 rounded-3xl"
                         style={{
                           background: "rgba(255,255,255,0.03)",
                           border: "1px solid rgba(255,255,255,0.08)",
@@ -668,8 +841,8 @@ export default function EligibilityCheck() {
                             <h3 className="text-lg font-bold" style={{ color: "#F8FAFC" }}>
                               {report.program?.program.name ?? report.programId}
                             </h3>
-                            <p className="text-sm mt-2" style={{ color: "rgba(248,250,252,0.55)" }}>
-                              {report.summary}
+                            <p className="text-sm mt-2" style={{ color: "rgba(248,250,252,0.72)" }}>
+                              {resultHeadlines[report.status]}
                             </p>
                           </div>
                           <div
@@ -684,13 +857,28 @@ export default function EligibilityCheck() {
                           </div>
                         </div>
 
+                        <div
+                          className="p-4 rounded-2xl mb-4"
+                          style={{
+                            background: color.bg,
+                            border: `1px solid ${color.border}`,
+                          }}
+                        >
+                          <div className="text-xs font-semibold mb-2" style={{ color: color.text }}>
+                            지금 상태 한눈에 보기
+                          </div>
+                          <div className="text-sm leading-relaxed" style={{ color: "#E2E8F0" }}>
+                            {report.summary}
+                          </div>
+                        </div>
+
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                           <div
                             className="p-4 rounded-xl"
                             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
                           >
                             <div className="text-xs font-semibold mb-3" style={{ color: "rgba(248,250,252,0.4)" }}>
-                              근거 요약
+                              확인된 내용이에요
                             </div>
                             <ul className="space-y-2">
                               {report.rationale.map((item) => (
@@ -705,11 +893,11 @@ export default function EligibilityCheck() {
                             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
                           >
                             <div className="text-xs font-semibold mb-3" style={{ color: "rgba(248,250,252,0.4)" }}>
-                              보완 항목
+                              {resultActionTitles[report.status]}
                             </div>
-                            {report.missingItems.length > 0 ? (
+                            {actionItems.length > 0 ? (
                               <ul className="space-y-2">
-                                {report.missingItems.map((item) => (
+                                {actionItems.map((item) => (
                                   <li key={item} className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.7)" }}>
                                     {item}
                                   </li>
@@ -717,7 +905,7 @@ export default function EligibilityCheck() {
                               </ul>
                             ) : (
                               <div className="text-sm" style={{ color: "rgba(248,250,252,0.45)" }}>
-                                현재 확인된 보완 항목이 없습니다.
+                                {getEmptyActionCopy(report.status)}
                               </div>
                             )}
                           </div>
@@ -726,15 +914,21 @@ export default function EligibilityCheck() {
                             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
                           >
                             <div className="text-xs font-semibold mb-3" style={{ color: "rgba(248,250,252,0.4)" }}>
-                              다음 행동
+                              다음 순서예요
                             </div>
-                            <ul className="space-y-2">
-                              {report.nextActions.map((item) => (
-                                <li key={item} className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.7)" }}>
-                                  {item}
-                                </li>
-                              ))}
-                            </ul>
+                            {report.nextActions.length > 0 ? (
+                              <ul className="space-y-2">
+                                {report.nextActions.map((item) => (
+                                  <li key={item} className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.7)" }}>
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.45)" }}>
+                                지금 결과를 기준으로 제출 시점과 준비 서류만 차근차근 확인해보세요.
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -754,7 +948,7 @@ export default function EligibilityCheck() {
                     onClick={resetFlow}
                   >
                     <RefreshCw size={16} />
-                    다시 검토
+                    답변 조정하고 다시 보기
                   </button>
                   <Link href="/subsidies">
                     <button
@@ -766,7 +960,7 @@ export default function EligibilityCheck() {
                         boxShadow: "0 0 20px rgba(59,130,246,0.3)",
                       }}
                     >
-                      전체 지원금 보기
+                      다른 지원금 함께 살펴보기
                       <ArrowRight size={16} />
                     </button>
                   </Link>
@@ -795,7 +989,7 @@ export default function EligibilityCheck() {
         }}
       >
         <div className="container text-center text-xs" style={{ color: "rgba(248,250,252,0.25)" }}>
-          본 검토 결과는 참고용이며, 실제지원금 신청시 노무법인 위너스에 연락주시면 친절하게 상담드리겠습니다.
+          이 결과는 빠른 1차 확인용 안내입니다. 실제 신청 전에는 최신 기준과 제출 서류를 한 번 더 확인해보시는 걸 권해드립니다.
         </div>
       </footer>
     </div>
