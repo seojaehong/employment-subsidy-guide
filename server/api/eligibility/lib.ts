@@ -129,6 +129,28 @@ function mapQuestionRow(row: QuestionRow): EligibilityQuestionRecord {
   };
 }
 
+function sortQuestionsByLocalOrder(questions: EligibilityQuestionRecord[]) {
+  const localOrder = getLocalEligibilityConfig().commonQuestions.concat(getLocalProgramFollowUpQuestions());
+  const orderMap = new Map(
+    localOrder.map((question, index) => [
+      `${question.scope}:${question.programId ?? ""}:${question.id}`,
+      index,
+    ]),
+  );
+
+  return [...questions].sort((a, b) => {
+    const aKey = `${a.scope}:${a.programId ?? ""}:${a.id}`;
+    const bKey = `${b.scope}:${b.programId ?? ""}:${b.id}`;
+    const aOrder = orderMap.get(aKey) ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = orderMap.get(bKey) ?? Number.MAX_SAFE_INTEGER;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    if (a.scope !== b.scope) return a.scope.localeCompare(b.scope);
+    if ((a.programId ?? "") !== (b.programId ?? "")) return (a.programId ?? "").localeCompare(b.programId ?? "");
+    return a.id.localeCompare(b.id);
+  });
+}
+
 function isSupabaseConfigured() {
   return process.env.SUPABASE_URL !== "" && process.env.SUPABASE_SERVICE_ROLE_KEY !== "";
 }
@@ -187,7 +209,7 @@ async function getPublishedQuestions() {
     "subsidy_question_sets",
     "?select=*&published=eq.true&order=scope.asc,question_id.asc",
   );
-  return rows.map(mapQuestionRow);
+  return sortQuestionsByLocalOrder(rows.map(mapQuestionRow));
 }
 
 async function getPublishedRules() {

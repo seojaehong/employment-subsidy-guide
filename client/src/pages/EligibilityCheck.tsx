@@ -859,9 +859,9 @@ export default function EligibilityCheck() {
                           }}
                         >
                           <div className="flex h-full flex-col justify-between">
-                            <div className="flex items-start gap-2" style={{ color: item.color.text }}>
-                              <span className="mt-0.5 shrink-0">{item.icon}</span>
-                              <span className="text-xs font-semibold leading-snug break-keep">{item.label}</span>
+                            <div className="flex flex-col items-center text-center gap-2" style={{ color: item.color.text }}>
+                              <span className="shrink-0">{item.icon}</span>
+                              <span className="text-sm font-semibold leading-snug break-keep">{item.label}</span>
                             </div>
                             <div className="mt-6 flex items-center justify-center text-3xl font-black" style={{ color: "#F8FAFC" }}>
                               <span>{item.value}</span>
