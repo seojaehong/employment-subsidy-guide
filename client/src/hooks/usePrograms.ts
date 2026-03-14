@@ -3,6 +3,9 @@ import type { OperationalProgram } from "@shared/subsidy";
 import { fetchPrograms } from "@/lib/api";
 import { subsidyData } from "@/lib/subsidyData";
 
+let cachedPrograms: OperationalProgram[] | null = null;
+let programsRequest: Promise<OperationalProgram[]> | null = null;
+
 function buildFallbackPrograms(): OperationalProgram[] {
   return subsidyData.map((item) => ({
     program: {
@@ -48,17 +51,32 @@ function buildFallbackPrograms(): OperationalProgram[] {
 }
 
 export function usePrograms() {
-  const [programs, setPrograms] = useState<OperationalProgram[]>(buildFallbackPrograms());
-  const [loading, setLoading] = useState(true);
+  const [programs, setPrograms] = useState<OperationalProgram[]>(cachedPrograms ?? buildFallbackPrograms());
+  const [loading, setLoading] = useState(cachedPrograms === null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (cachedPrograms) return;
+
     let active = true;
 
-    fetchPrograms()
-      .then((payload) => {
+    const request =
+      programsRequest ??
+      fetchPrograms()
+        .then((payload) => {
+          cachedPrograms = payload.programs;
+          return payload.programs;
+        })
+        .catch((error) => {
+          programsRequest = null;
+          throw error;
+        });
+    programsRequest = request;
+
+    request
+      .then((resolvedPrograms) => {
         if (!active) return;
-        setPrograms(payload.programs);
+        setPrograms(resolvedPrograms);
       })
       .catch((err: unknown) => {
         if (!active) return;

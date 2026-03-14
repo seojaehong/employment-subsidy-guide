@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -98,7 +98,7 @@ const resultColors = {
 export default function EligibilityCheck() {
   const { programs } = usePrograms();
   const [flowStep, setFlowStep] = useState<FlowStep>("common");
-  const [commonQuestions, setCommonQuestions] = useState<EligibilityQuestionRecord[]>([]);
+  const [commonQuestions, setCommonQuestions] = useState<EligibilityQuestionRecord[]>(() => getCommonEligibilityQuestions());
   const [commonAnswers, setCommonAnswers] = useState<Record<string, string | string[]>>({});
   const [commonStepIndex, setCommonStepIndex] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -243,59 +243,87 @@ export default function EligibilityCheck() {
     return new Map(programs.map((program) => [program.program.legacyId, program]));
   }, [programs]);
 
+  const buildLocalSessionPayload = (baseAnswers: BaseEligibilityAnswers): SessionCreateResponse => {
+    const recommendations = recommendProgramIds(baseAnswers);
+    return {
+      session: {
+        id: `local-session-${Date.now()}`,
+        baseAnswers,
+        recommendations,
+      },
+      followUpQuestions: getProgramFollowUpQuestions().filter((question) =>
+        recommendations.some((recommendation) => recommendation.programId === question.programId),
+      ),
+    };
+  };
+
+  const resolveProgramsFromRecommendations = (recommendations: RecommendationRecord[]) =>
+    recommendations
+      .map((recommendation) => programLookup.get(recommendation.programId) ?? null)
+      .filter(Boolean) as OperationalProgram[];
+
+  const buildResolvedReports = (
+    programIds: string[],
+    baseAnswers: BaseEligibilityAnswers,
+    answers: FollowUpAnswers,
+  ) =>
+    determinePrograms(programIds, baseAnswers, answers).map((determination) => ({
+      ...determination,
+      program: programLookup.get(determination.programId) ?? null,
+    }));
+
   const startRecommendation = async () => {
     if (!normalisedBaseAnswers) return;
     setLoading(true);
     setError(null);
 
     try {
-      let payload: SessionCreateResponse;
-      try {
-        payload = await createEligibilitySessionRequest(normalisedBaseAnswers) as SessionCreateResponse;
-      } catch {
-        const recommendations = recommendProgramIds(normalisedBaseAnswers);
-        payload = {
-          session: {
-            id: `local-session-${Date.now()}`,
-            baseAnswers: normalisedBaseAnswers,
-            recommendations,
-          },
-          followUpQuestions: getProgramFollowUpQuestions().filter((question) =>
-            recommendations.some((recommendation) => recommendation.programId === question.programId),
-          ),
-        };
-      }
-      setSessionId(payload.session.id);
-      const resolvedPrograms = payload.session.recommendations
-        .map((recommendation) => programLookup.get(recommendation.programId) ?? null)
-        .filter(Boolean) as OperationalProgram[];
-      setRecommendedPrograms(resolvedPrograms);
-      setFollowUpQuestions(payload.followUpQuestions);
-      if (payload.followUpQuestions.length === 0) {
-        const nextReports = determinePrograms(
-          resolvedPrograms.map((program) => program.program.legacyId),
+      const localPayload = buildLocalSessionPayload(normalisedBaseAnswers);
+      const localPrograms = resolveProgramsFromRecommendations(localPayload.session.recommendations);
+
+      startTransition(() => {
+        setSessionId(localPayload.session.id);
+        setRecommendedPrograms(localPrograms);
+        setFollowUpQuestions(localPayload.followUpQuestions);
+      });
+
+      if (localPayload.followUpQuestions.length === 0) {
+        const nextReports = buildResolvedReports(
+          localPrograms.map((program) => program.program.legacyId),
           normalisedBaseAnswers,
           {},
-        ).map((determination) => ({
-          ...determination,
-          program: programLookup.get(determination.programId) ?? null,
-        }));
-        setReports(nextReports);
+        );
+        startTransition(() => {
+          setReports(nextReports);
+        });
         sessionStorage.setItem(
           "eligibility-session",
           JSON.stringify({
             session: {
-              id: payload.session.id,
+              id: localPayload.session.id,
               baseAnswers: normalisedBaseAnswers,
             },
             reports: nextReports,
           }),
         );
         setFlowStep("result");
-        return;
+      } else {
+        setFlowStep("followup");
       }
 
-      setFlowStep("followup");
+      createEligibilitySessionRequest(normalisedBaseAnswers)
+        .then((response) => {
+          const payload = response as SessionCreateResponse;
+          const resolvedPrograms = resolveProgramsFromRecommendations(payload.session.recommendations);
+          startTransition(() => {
+            setSessionId(payload.session.id);
+            setRecommendedPrograms(resolvedPrograms);
+            setFollowUpQuestions(payload.followUpQuestions);
+          });
+        })
+        .catch(() => {
+          // Keep the optimistic local flow when the network path is slow or unavailable.
+        });
     } catch (err) {
       setError(err instanceof Error ? err.message : "추천 결과를 생성하지 못했습니다.");
     } finally {
@@ -309,26 +337,14 @@ export default function EligibilityCheck() {
     setError(null);
 
     try {
-      let nextReports: Array<DeterminationResult & { program: OperationalProgram | null }>;
-      try {
-        const response = await determineEligibilitySessionRequest(sessionId, followUpAnswers) as {
-          reports: DeterminationResult[];
-        };
-        nextReports = response.reports.map((determination) => ({
-          ...determination,
-          program: programLookup.get(determination.programId) ?? null,
-        }));
-      } catch {
-        nextReports = determinePrograms(
-          recommendedPrograms.map((program) => program.program.legacyId),
-          normalisedBaseAnswers,
-          followUpAnswers,
-        ).map((determination) => ({
-          ...determination,
-          program: programLookup.get(determination.programId) ?? null,
-        }));
-      }
-      setReports(nextReports);
+      const nextReports = buildResolvedReports(
+        recommendedPrograms.map((program) => program.program.legacyId),
+        normalisedBaseAnswers,
+        followUpAnswers,
+      );
+      startTransition(() => {
+        setReports(nextReports);
+      });
       const payload = {
         session: {
           id: sessionId,
@@ -338,6 +354,32 @@ export default function EligibilityCheck() {
       };
       sessionStorage.setItem("eligibility-session", JSON.stringify(payload));
       setFlowStep("result");
+
+      if (!sessionId.startsWith("local-session")) {
+        determineEligibilitySessionRequest(sessionId, followUpAnswers)
+          .then((response) => {
+            const resolvedReports = (response as { reports: DeterminationResult[] }).reports.map((determination) => ({
+              ...determination,
+              program: programLookup.get(determination.programId) ?? null,
+            }));
+            startTransition(() => {
+              setReports(resolvedReports);
+            });
+            sessionStorage.setItem(
+              "eligibility-session",
+              JSON.stringify({
+                session: {
+                  id: sessionId,
+                  baseAnswers: normalisedBaseAnswers,
+                },
+                reports: resolvedReports,
+              }),
+            );
+          })
+          .catch(() => {
+            // Keep the optimistic local result when the network path is slow or unavailable.
+          });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "판정 결과를 생성하지 못했습니다.");
     } finally {

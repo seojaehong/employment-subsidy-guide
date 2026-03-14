@@ -11,25 +11,39 @@ import type {
   RuleDefinition,
 } from "@shared/subsidy";
 
-async function request<T>(input: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  });
+interface RequestOptions extends RequestInit {
+  timeoutMs?: number;
+}
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed: ${response.status}`);
+async function request<T>(input: string, init?: RequestOptions): Promise<T> {
+  const controller = new AbortController();
+  const timeoutMs = init?.timeoutMs ?? 8000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(input, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
+      },
+      signal: controller.signal,
+      ...init,
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || `Request failed: ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json() as Promise<T>;
 }
 
 export function fetchPrograms() {
-  return request<{ programs: OperationalProgram[] }>("/api/programs");
+  return request<{ programs: OperationalProgram[] }>("/api/programs", {
+    timeoutMs: 3000,
+  });
 }
 
 export function fetchProgram(programId: string) {
@@ -37,13 +51,16 @@ export function fetchProgram(programId: string) {
 }
 
 export function fetchEligibilityConfig() {
-  return request("/api/eligibility/config");
+  return request("/api/eligibility/config", {
+    timeoutMs: 2500,
+  });
 }
 
 export function createEligibilitySession(baseAnswers: BaseEligibilityAnswers) {
   return request("/api/eligibility/sessions", {
     method: "POST",
     body: JSON.stringify(baseAnswers),
+    timeoutMs: 3500,
   });
 }
 
@@ -55,6 +72,7 @@ export function determineEligibilitySession(sessionId: string, followUpAnswers: 
   return request(`/api/eligibility/sessions/${sessionId}/determine`, {
     method: "POST",
     body: JSON.stringify(followUpAnswers),
+    timeoutMs: 3500,
   });
 }
 
