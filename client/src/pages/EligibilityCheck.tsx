@@ -198,6 +198,15 @@ export default function EligibilityCheck() {
     return "지금 답변과 실제 운영 기준이 같은지 한 번 더 확인해보시면 다음 판단에 도움이 돼요.";
   };
 
+  const getEligibleWrapUp = (report: DeterminationResult) => {
+    const firstAction = report.nextActions[0];
+    if (firstAction) {
+      return `현재 기준으로는 별도 보완 없이 준비를 이어가셔도 괜찮아요. ${firstAction}`;
+    }
+
+    return "현재 기준으로는 별도 보완 없이 준비를 이어가셔도 괜찮아요. 제출 시점과 준비 서류만 차근차근 확인해보세요.";
+  };
+
   const handleAnswer = (question: EligibilityQuestionRecord, value: string) => {
     setError(null);
     if (question.type === "multi") {
@@ -824,6 +833,7 @@ export default function EligibilityCheck() {
                       : { text: "#93C5FD", bg: "rgba(59,130,246,0.08)", border: "rgba(59,130,246,0.18)" };
                     const statusTheme = resultColors[report.status];
                     const actionItems = report.missingItems.length > 0 ? report.missingItems : report.nextActions;
+                    const isSimpleEligible = report.status === "eligible" && report.missingItems.length === 0;
                     return (
                       <div
                         key={report.programId}
@@ -872,6 +882,22 @@ export default function EligibilityCheck() {
                           </div>
                         </div>
 
+                        {isSimpleEligible ? (
+                          <div
+                            className="p-4 rounded-2xl"
+                            style={{
+                              background: "rgba(16,185,129,0.08)",
+                              border: "1px solid rgba(16,185,129,0.18)",
+                            }}
+                          >
+                            <div className="text-xs font-semibold mb-2" style={{ color: "#6EE7B7" }}>
+                              지금 단계에서는
+                            </div>
+                            <div className="text-sm leading-relaxed" style={{ color: "rgba(248,250,252,0.78)" }}>
+                              {getEligibleWrapUp(report)}
+                            </div>
+                          </div>
+                        ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                           <div
                             className="p-4 rounded-xl"
@@ -931,6 +957,7 @@ export default function EligibilityCheck() {
                             )}
                           </div>
                         </div>
+                        )}
                       </div>
                     );
                   })}

@@ -692,15 +692,15 @@ function determineEmploymentPromotion(
   const maintain = getFollowValue(answers, "employment-promotion.maintainSixMonths");
   const wage = getFollowValue(answers, "employment-promotion.wageLevel");
 
-  if (registration === "no" || regularEmployment === "no" || wage === "no") {
+  if (registration === "no" || regularEmployment === "no" || wage === "no" || maintain === "no") {
     return {
       programId: "employment-promotion",
       status: "ineligible",
       summary: "지금 정보만 보면 먼저 확인이 필요한 조건이 있어요.",
       rationale: [
-        "구직등록 이력, 채용 형태, 보수 기준 가운데 아직 맞지 않거나 확인되지 않은 항목이 있습니다.",
+        "구직등록 이력, 채용 형태, 고용유지, 보수 기준 가운데 아직 맞지 않거나 확인되지 않은 항목이 있습니다.",
       ],
-      missingItems: ["사전 구직등록 또는 취업지원 이력", "정규직 채용 형태", "월평균 보수 124만원 이상"],
+      missingItems: ["사전 구직등록 또는 취업지원 이력", "정규직 채용 형태", "6개월 이상 고용유지", "월평균 보수 124만원 이상"],
       nextActions: ["채용 대상자 요건과 임금 수준을 다시 확인한 뒤 한 번 더 살펴보세요."],
       canGenerateDraft: false,
     };
@@ -709,10 +709,7 @@ function determineEmploymentPromotion(
   if (registration === "unknown") missingItems.push("채용 대상자의 구직등록 또는 취업지원 이력 확인");
   if (maintain === "unknown") missingItems.push("6개월 고용유지 운영계획 확정");
   if (wage === "unknown") missingItems.push("월평균 보수 산정");
-  if (maintain === "no") missingItems.push("6개월 이상 고용유지 계획");
-
-  const status: DeterminationStatus =
-    maintain === "no" ? "manual_review" : missingItems.length > 0 ? "needs_followup" : "eligible";
+  const status: DeterminationStatus = missingItems.length > 0 ? "needs_followup" : "eligible";
 
   return {
     programId: "employment-promotion",
@@ -758,19 +755,23 @@ function determineYouthEmployment(
     };
   }
 
+  if (baseAnswers.companySize === "대규모기업") {
+    return {
+      programId: "youth-employment",
+      status: "ineligible",
+      summary: "지금 정보만 보면 기업 규모 기준을 먼저 다시 확인해보는 편이 좋아요.",
+      rationale: ["청년 채용 장려금은 현재 입력하신 대규모기업 기준으로는 바로 적용하기 어려운 경우가 많습니다."],
+      missingItems: ["기업 규모 기준 재확인"],
+      nextActions: ["기업 규모와 적용 가능한 예외 요건이 있는지 먼저 다시 살펴보세요."],
+      canGenerateDraft: false,
+    };
+  }
+
   if (targetYouth === "unknown") missingItems.push("취업애로청년 해당 여부 확인");
   if (hours === "unknown") missingItems.push("주 소정근로시간 설계 확정");
   if (maintain === "unknown") missingItems.push("6개월 고용유지 계획 확정");
-  if (baseAnswers.companySize === "대규모기업") {
-    missingItems.push("대규모기업은 원칙적으로 대상이 아니므로 별도 확인");
-  }
 
-  const status: DeterminationStatus =
-    baseAnswers.companySize === "대규모기업"
-      ? "manual_review"
-      : missingItems.length > 0
-        ? "needs_followup"
-        : "eligible";
+  const status: DeterminationStatus = missingItems.length > 0 ? "needs_followup" : "eligible";
 
   rationale.push(
     baseAnswers.companySize === "중견기업"
@@ -880,12 +881,7 @@ function determineRegionalEmployment(
   if (localResident === "unknown") missingItems.push("채용 대상자의 지역 거주기간 확인");
   if (maintain === "unknown") missingItems.push("6개월 고용유지 계획 확정");
 
-  const status: DeterminationStatus =
-    planReported === "needs_report"
-      ? "needs_followup"
-      : missingItems.length > 0
-        ? "manual_review"
-        : "eligible";
+  const status: DeterminationStatus = missingItems.length > 0 ? "needs_followup" : "eligible";
 
   return {
     programId: "regional-employment",

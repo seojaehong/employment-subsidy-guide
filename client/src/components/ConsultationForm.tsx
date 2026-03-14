@@ -265,7 +265,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
               >
                 <Database size={14} className="flex-shrink-0 mt-0.5" />
                 <span>
-                  요청 내용은 바로 접수되며, 담당자가 확인 포인트를 살펴본 뒤 순서대로 안내드립니다.
+                  요청이 접수되면 결과와 확인 포인트를 함께 보고 순서대로 안내드립니다.
                 </span>
               </div>
 
@@ -300,24 +300,10 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                {[
-                  "결과와 확인 포인트 함께 전달",
-                  "연락처만 남겨도 검토 가능",
-                  "우선 챙길 항목부터 순서 정리",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="p-3 rounded-xl text-xs"
-                    style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      color: "rgba(248,250,252,0.62)",
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
+              <div className="text-xs mb-4" style={{ color: "rgba(248,250,252,0.55)" }}>
+                {missingItems.length > 0
+                  ? "보완이 필요한 항목이 있다면 우선순위부터 함께 정리해드려요."
+                  : "연락처만 남겨주시면 현재 결과를 기준으로 차근차근 검토해드려요."}
               </div>
 
               {!IS_CONFIGURED && (
@@ -331,7 +317,7 @@ export default function ConsultationForm({ subsidyName, context }: ConsultationF
                 >
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>
-                    EmailJS 설정이 없어 이메일 전송은 생략됩니다. 운영 전에 접수 알림 연결만 한 번 확인해두시면 좋습니다.
+                    이메일 알림 설정이 아직 연결되지 않아 현재는 접수 기록만 저장됩니다. 운영 전에 연결 상태만 한 번 확인해 주세요.
                   </span>
                 </div>
               )}
