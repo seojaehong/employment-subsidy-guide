@@ -263,17 +263,17 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
           <div
-            className="w-6 h-10 rounded-full border-2 flex items-start justify-center pt-2"
-            style={{ borderColor: "rgba(255,255,255,0.2)" }}
+            className="w-5 h-8 rounded-full border flex items-start justify-center pt-1.5"
+            style={{ borderColor: "rgba(255,255,255,0.16)" }}
           >
             <div
-              className="w-1 h-2 rounded-full"
-              style={{ background: "rgba(255,255,255,0.4)" }}
+              className="w-1 h-1.5 rounded-full"
+              style={{ background: "rgba(255,255,255,0.32)" }}
             />
           </div>
         </motion.div>
