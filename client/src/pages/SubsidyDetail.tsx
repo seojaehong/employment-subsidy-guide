@@ -484,7 +484,7 @@ export default function SubsidyDetail() {
                       boxShadow: "0 0 20px rgba(59,130,246,0.3)",
                     }}
                   >
-                    자격 검토 시작하기
+                    이 제도 기준으로 확인하기
                   </button>
                 </Link>
                 <Link href="/subsidies">
@@ -567,7 +567,7 @@ export default function SubsidyDetail() {
         }}
       >
         <div className="container text-center text-xs" style={{ color: "rgba(248,250,252,0.25)" }}>
-          본 검토 결과는 참고용이며, 실제지원금 신청시 노무법인 위너스에 연락주시면 친절하게 상담드리겠습니다.
+          본 안내는 공개 기준을 바탕으로 먼저 정리한 참고용 정보입니다. 실제 신청 전에는 최신 공고와 사업장 상황을 함께 확인해보세요.
         </div>
       </footer>
     </div>
