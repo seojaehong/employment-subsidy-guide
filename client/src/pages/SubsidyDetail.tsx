@@ -487,6 +487,23 @@ export default function SubsidyDetail() {
                     이 제도 기준으로 확인하기
                   </button>
                 </Link>
+                <a
+                  href="https://xn--o80bk8isxeinax68f.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <button
+                    className="w-full py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "rgba(248,250,252,0.72)",
+                    }}
+                  >
+                    노란봉투법 관련 정보는 별도 사이트에서 보기
+                  </button>
+                </a>
                 <Link href="/subsidies">
                   <button
                     className="w-full py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
